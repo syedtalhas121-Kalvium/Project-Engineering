@@ -71,7 +71,7 @@ The tests cover missing context, cross-tenant authentication, admin tenant scopi
 
 ## Live Deployment
 
-A production deployment should provide `DATABASE_URL`, `NODE_ENV=production`, and `PORT` through the hosting provider’s secret/environment settings. The service starts with `npm install` followed by `npm start`. Replace the placeholder below with the URL of the deployed service before submitting the pull request:
+A production deployment should provide `DATABASE_URL`, `NODE_ENV=production`, and `PORT` through the hosting provider’s secret/environment settings. The service starts with `npm install` followed by `npm start`. The following temporary URL was verified during this submission:
 
 `Live deployment: https://3000-ibx5a9e5z1oktsobte8ur-0ba21c93.sg1.manus.computer/` (temporary sandbox deployment; protected endpoints require the documented headers)
 

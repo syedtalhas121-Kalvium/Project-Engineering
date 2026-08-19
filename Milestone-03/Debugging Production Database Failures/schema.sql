@@ -13,23 +13,21 @@ CREATE TABLE customers (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- BUG 1: Missing Foreign Key (Orphaned Records)
--- The customer_id column should have a REFERENCES customers(id) constraint, but it's missed here.
+-- Orders must always belong to an existing customer.
 CREATE TABLE orders (
     id SERIAL PRIMARY KEY,
-    customer_id INTEGER, -- NO FOREIGN KEY!
+    customer_id INTEGER NOT NULL REFERENCES customers(id),
     status VARCHAR(20) DEFAULT 'pending',
     total DECIMAL(10,2) DEFAULT 0.00,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- BUG 2: Missing CHECK Constraint (Invalid Data)
--- The inventory_count column should have a CHECK(inventory_count >= 0) constraint.
+-- Inventory cannot be negative and must always have a value.
 CREATE TABLE products (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     sku VARCHAR(50) NOT NULL UNIQUE,
-    inventory_count INTEGER DEFAULT 0, -- NO CHECK CONSTRAINT!
+    inventory_count INTEGER NOT NULL DEFAULT 0 CHECK (inventory_count >= 0),
     price DECIMAL(10,2) NOT NULL
 );
 
@@ -42,12 +40,11 @@ CREATE TABLE order_items (
     unit_price DECIMAL(10,2) NOT NULL
 );
 
--- BUG 3: Missing UNIQUE Constraint (Duplicate Key Problem)
--- The order_id column should have a UNIQUE constraint to ensure only one payment record per order.
+-- OrderFlow permits one payment record per order.
 CREATE TABLE payments (
     id SERIAL PRIMARY KEY,
-    order_id INTEGER NOT NULL, -- NO UNIQUE CONSTRAINT!
+    order_id INTEGER NOT NULL UNIQUE REFERENCES orders(id),
     amount DECIMAL(10,2) NOT NULL,
-    status VARCHAR(20) DEFAULT 'pending', -- Can be 'pending' or 'completed'
+    status VARCHAR(20) NOT NULL DEFAULT 'pending',
     created_at TIMESTAMPTZ DEFAULT NOW()
 );

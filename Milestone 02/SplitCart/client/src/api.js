@@ -1,31 +1,30 @@
 const API_URL = 'http://localhost:3001';
 
-export const fetchCart = async () => {
-  const response = await fetch(`${API_URL}/cart`);
-  return response.json();
+const request = async (path, options = {}) => {
+  const response = await fetch(`${API_URL}${path}`, options);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.error || 'The request could not be completed');
+  }
+  return data;
 };
 
-export const addItem = async (item) => {
-  const response = await fetch(`${API_URL}/cart/item`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(item),
-  });
-  return response.json();
-};
+export const fetchCart = () => request('/cart');
 
-export const deleteItem = async (id) => {
-  const response = await fetch(`${API_URL}/cart/item/${id}`, {
-    method: 'DELETE',
-  });
-  return response.json();
-};
+export const addItem = (item) => request('/cart/item', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(item),
+});
 
-export const confirmPayment = async (payment) => {
-  const response = await fetch(`${API_URL}/cart/pay`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payment),
-  });
-  return response.json();
-};
+export const deleteItem = (id, currentUser) => request(`/cart/item/${id}`, {
+  method: 'DELETE',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ currentUser }),
+});
+
+export const confirmPayment = (payment) => request('/cart/pay', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(payment),
+});

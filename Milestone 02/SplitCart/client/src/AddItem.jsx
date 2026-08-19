@@ -1,53 +1,73 @@
 import React, { useState } from 'react';
 
-const AddItem = ({ onAdd, participants }) => {
+const AddItem = ({ onAdd, currentUser, locked }) => {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
-  const [addedBy, setAddedBy] = useState(participants[0]);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    // VISIBLE BUG: No validation on name or price is preserved
-    onAdd({ name, price, addedBy });
-    setName('');
-    setPrice('');
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const trimmedName = name.trim();
+    const numericPrice = Number(price);
+
+    if (!trimmedName) {
+      setError('Item name is required');
+      return;
+    }
+    if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
+      setError('Enter a price greater than $0.00');
+      return;
+    }
+
+    setError('');
+    try {
+      await onAdd({ name: trimmedName, price: numericPrice, addedBy: currentUser });
+      setName('');
+      setPrice('');
+    } catch (submitError) {
+      setError(submitError.message);
+    }
   };
 
   return (
     <section className="panel">
       <h3 className="panel-title">
-        <span style={{color: '#008f11'}}>&gt;</span> INJECT_EXPENSE
+        <span style={{ color: '#008f11' }}>&gt;</span> INJECT_EXPENSE
       </h3>
+      {locked && <p className="notice notice-warning">Cart is locked — payment in progress</p>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label>RESOURCE_NAME</label>
-          <input 
-            type="text" 
-            placeholder="[ ENTRY REQUIRED ]" 
+          <label htmlFor="resource-name">RESOURCE_NAME</label>
+          <input
+            id="resource-name"
+            type="text"
+            placeholder="[ ENTRY REQUIRED ]"
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(event) => setName(event.target.value)}
+            disabled={locked}
+            required
           />
         </div>
         <div className="form-group">
-          <label>CREDIT_VALUE ($)</label>
-          <input 
-            type="number" 
-            step="0.01" 
-            placeholder="0.00" 
+          <label htmlFor="credit-value">CREDIT_VALUE ($)</label>
+          <input
+            id="credit-value"
+            type="number"
+            step="0.01"
+            min="0.01"
+            placeholder="0.00"
             value={price}
-            onChange={(e) => setPrice(e.target.value)}
+            onChange={(event) => setPrice(event.target.value)}
+            disabled={locked}
+            required
           />
         </div>
         <div className="form-group">
-          <label>ORIGIN_NODE</label>
-          <select 
-            value={addedBy}
-            onChange={(e) => setAddedBy(e.target.value)}
-          >
-            {participants.map(p => <option key={p} value={p}>{p}</option>)}
-          </select>
+          <label htmlFor="origin-node">ORIGIN_NODE</label>
+          <input id="origin-node" value={currentUser} readOnly />
         </div>
-        <button type="submit" className="btn-primary">COMMIT TO SHARED_POOL</button>
+        {error && <p className="notice notice-error" role="alert">{error}</p>}
+        <button type="submit" className="btn-primary" disabled={locked}>COMMIT TO SHARED_POOL</button>
       </form>
     </section>
   );

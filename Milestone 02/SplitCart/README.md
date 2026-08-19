@@ -61,3 +61,17 @@ Pay attention to how:
 Document any inconsistencies you observe.
 
 These observations will help define the acceptance criteria that should govern the product.
+
+
+## Challenge #6 Submission
+
+The completed investigation and Given / When / Then acceptance criteria are available in [`docs/splitcart-acceptance-criteria.md`](./docs/splitcart-acceptance-criteria.md), with the required PDF submission at [`docs/student-splitcart-logic-lab.pdf`](./docs/student-splitcart-logic-lab.pdf).
+
+The repaired prototype now enforces positive item prices, participant ownership for deletion, a cart lock after the first payment, exact cent-based payment validation, and deterministic remainder handling. To run it locally:
+
+```bash
+npm run install-all
+npm run dev
+```
+
+The client runs at `http://localhost:5173` and the API runs at `http://localhost:3001`.

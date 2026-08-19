@@ -1,0 +1,14 @@
+{
+  "name": "dorm-marketplace",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A focused campus marketplace MVP with safe claim, expiry, and seller override flows.",
+  "type": "module",
+  "scripts": {
+    "start": "npx --yes vite --host 0.0.0.0",
+    "test": "node --test tests/domain.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

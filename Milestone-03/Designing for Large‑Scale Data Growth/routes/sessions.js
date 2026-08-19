@@ -8,7 +8,7 @@ const router = express.Router();
 router.post('/start', async (req, res) => {
   const { user_id } = req.body;
   try {
-    const result = await db.query(
+    const result = await db.writeQuery(
       'INSERT INTO sessions (user_id, started_at) VALUES ($1, NOW()) RETURNING *',
       [user_id]
     );
@@ -25,7 +25,7 @@ router.post('/start', async (req, res) => {
  */
 router.get('/active', async (req, res) => {
   try {
-    const result = await db.query(
+    const result = await db.readQuery(
       'SELECT * FROM sessions WHERE ended_at IS NULL'
     );
     res.json(result.rows);

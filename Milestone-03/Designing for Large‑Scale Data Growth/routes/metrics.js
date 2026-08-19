@@ -9,7 +9,7 @@ const router = express.Router();
 router.get('/monthly', async (req, res) => {
   try {
     // Aggregate event counts by type for the last 30 days
-    const result = await db.query(
+    const result = await db.readQuery(
       "SELECT COUNT(*), event_type FROM events WHERE created_at > NOW() - INTERVAL '30 days' GROUP BY event_type"
     );
     res.json(result.rows);
@@ -25,7 +25,7 @@ router.get('/monthly', async (req, res) => {
 router.post('/feature-usage', async (req, res) => {
   const { user_id, feature_name } = req.body;
   try {
-    const result = await db.query(
+    const result = await db.writeQuery(
       'INSERT INTO feature_usage (user_id, feature_name, used_at) VALUES ($1, $2, NOW()) RETURNING *',
       [user_id, feature_name]
     );

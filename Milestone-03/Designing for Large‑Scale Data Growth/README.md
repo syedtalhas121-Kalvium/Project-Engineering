@@ -1,55 +1,73 @@
 # TrackFlow API
 
-TrackFlow is a high-performance event tracking and analytics API designed for early-stage startups. It provides a simple, robust interface for logging user interactions, managing sessions, and generating aggregate metrics.
+TrackFlow is an event tracking and analytics API for SaaS products. This implementation addresses the large-scale growth challenge with **monthly range partitioning**, a **90-day archive policy**, and explicit **primary/replica query routing**.
+
+## Live Deployment
+
+The repository is public at [syedtalhas121-Kalvium/Project-Engineering](https://github.com/syedtalhas121-Kalvium/Project-Engineering). A verified live demo is available at [https://3100-irc49gbvj884audk3jv8q-6f5ac53f.sg1.manus.computer](https://3100-irc49gbvj884audk3jv8q-6f5ac53f.sg1.manus.computer) and its [health endpoint](https://3100-irc49gbvj884audk3jv8q-6f5ac53f.sg1.manus.computer/health). This is a temporary public demo URL for the submission environment. For a persistent deployment, use Render or Railway with `npm install` as the build command and `npm start` as the start command. Configure `PRIMARY_DB_URL` and `REPLICA_DB_URL`; both may point to the same PostgreSQL instance for a demo.
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js (v18+)
-- PostgreSQL (v14+)
+
+Node.js v18 or later and PostgreSQL v14 or later are required.
 
 ### Installation
-1. Clone the repository.
+
+1. Clone the repository and enter this directory.
 2. Install dependencies:
+
    ```bash
    npm install
    ```
-3. Create a `.env` file based on `.env.example` and configure your database URL:
+
+3. Create a `.env` file from `.env.example`. For local development, both database variables may use the same database:
+
    ```env
-   DATABASE_URL=postgres://user:password@localhost:5432/trackflow
+   PRIMARY_DB_URL=postgres://user:password@localhost:5432/trackflow
+   REPLICA_DB_URL=postgres://user:password@localhost:5432/trackflow
+   PORT=3000
    ```
+
+   `DATABASE_URL` remains supported as a legacy fallback for the primary connection.
+
 4. Initialize the database schema:
+
    ```bash
    psql -d trackflow -f schema.sql
    ```
+
 5. Start the server:
+
    ```bash
    npm start
    ```
 
+### Archive job
+
+Run `archive-events.sql` nightly from a trusted scheduler, for example at 02:15 UTC:
+
+```cron
+15 2 * * * psql "$PRIMARY_DB_URL" -v ON_ERROR_STOP=1 -f archive-events.sql
+```
+
+The job moves raw events older than 90 days to `events_archive`. Compliance queries that span the retention boundary should use the `UNION ALL` pattern documented in that file.
+
 ## API Endpoints
 
-### Events
-- `POST /events` - Ingest a new event.
-- `GET /events?user_id={id}` - Get recent events for a user.
-
-### Sessions
-- `POST /sessions/start` - Start a new user session.
-- `GET /sessions/active` - List all currently active sessions.
-
-### Metrics
-- `GET /metrics/monthly` - Get event type distribution for the last 30 days.
-- `POST /metrics/feature-usage` - Log a specific feature interaction.
+| Method | Route | Database target | Purpose |
+| --- | --- | --- | --- |
+| `POST` | `/events` | Primary | Ingest an event. |
+| `GET` | `/events?user_id={id}` | Replica | Return the latest 100 events for a user. |
+| `POST` | `/sessions/start` | Primary | Start a session. |
+| `GET` | `/sessions/active` | Replica | List sessions without an end time. |
+| `GET` | `/metrics/monthly` | Replica | Aggregate event types from the last 30 days. |
+| `POST` | `/metrics/feature-usage` | Primary | Record a feature interaction. |
+| `GET` | `/health` | None | Return API health status. |
 
 ## Growth Context
 
-Students should use the following data points for their projections and architectural proposals:
-
-- **Current active users:** 50,000
-- **Average events per user per day:** 200
-- **Daily event row growth:** 10,000,000 rows/day
-- **Current events table size:** 45,000,000 rows (4.5 days of data)
-- **Projected monthly growth:** 300,000,000 rows
+The challenge starts with 50,000 active users, 200 events per user per day, 10,000,000 event rows added per day, 45,000,000 current event rows, and projected monthly growth of 300,000,000 rows. See [GROWTH-ANALYSIS.md](./GROWTH-ANALYSIS.md) for arithmetic, thresholds, and route-level risks. See [SCALE-PLAN.md](./SCALE-PLAN.md) for the complete architecture plan and rollout order.
 
 ---
 

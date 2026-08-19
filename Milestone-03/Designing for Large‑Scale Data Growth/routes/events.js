@@ -10,7 +10,7 @@ router.post('/', async (req, res) => {
   const { user_id, session_id, event_type, properties } = req.body;
   
   try {
-    const result = await db.query(
+    const result = await db.writeQuery(
       'INSERT INTO events (user_id, session_id, event_type, properties) VALUES ($1, $2, $3, $4) RETURNING *',
       [user_id, session_id, event_type, properties]
     );
@@ -34,7 +34,7 @@ router.get('/', async (req, res) => {
 
   try {
     // Fetch top 100 events ordered by timestamp for the specific user
-    const result = await db.query(
+    const result = await db.readQuery(
       'SELECT * FROM events WHERE user_id = $1 ORDER BY created_at DESC LIMIT 100',
       [user_id]
     );

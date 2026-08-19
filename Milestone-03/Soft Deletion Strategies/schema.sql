@@ -8,7 +8,8 @@ CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMPTZ DEFAULT NULL
 );
 
 -- Accounts table stores checking or savings details for each user
@@ -17,7 +18,8 @@ CREATE TABLE accounts (
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     account_type VARCHAR(50) NOT NULL, -- 'checking' or 'savings'
     balance DECIMAL(15, 2) DEFAULT 0.00,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMPTZ DEFAULT NULL
 );
 
 -- Transactions table stores all credit and debit movements
@@ -27,5 +29,13 @@ CREATE TABLE transactions (
     amount DECIMAL(15, 2) NOT NULL,
     type VARCHAR(50) NOT NULL, -- 'credit' or 'debit'
     description TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMPTZ DEFAULT NULL
 );
+
+-- Partial indexes keep active-record lookups small as deleted rows accumulate.
+CREATE INDEX idx_users_active ON users(id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_accounts_active ON accounts(id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_accounts_active_user ON accounts(user_id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_transactions_active ON transactions(id) WHERE deleted_at IS NULL;
+CREATE INDEX idx_transactions_active_account ON transactions(account_id) WHERE deleted_at IS NULL;

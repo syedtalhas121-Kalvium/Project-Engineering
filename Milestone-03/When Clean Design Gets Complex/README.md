@@ -255,3 +255,19 @@ Your work will then be **reviewed before being merged**.
 - **All work must happen inside your fork**
 
 This ensures the **original codebase remains unchanged and stable**.
+
+## Completed Implementation
+
+This submission adds `schema/normalized_schema.sql`, which separates products, suppliers, categories, tags, warehouses, and inventory into 3NF tables with primary keys, foreign keys, uniqueness constraints, validation checks, and workload-oriented indexes. The many-to-many relationships are represented by `product_categories` and `product_tags`, while `inventory` supports stock per product and warehouse.
+
+The queries in `queries/product_queries.sql` now use joins to retrieve category, supplier, tag, and inventory information without relying on comma-separated columns. The design rationale is documented in `docs/normalization-analysis.md`.
+
+### Validation
+
+Run the included SQLite smoke test from this challenge directory:
+
+```bash
+python3 tests/test_normalized_schema.py
+```
+
+The test creates an in-memory database, enables foreign-key enforcement, loads representative catalog data, executes all six application queries, and verifies the expected results and referential integrity.

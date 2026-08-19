@@ -1,11 +1,12 @@
 {
   "name": "corpflow-api",
-  "version": "1.0.0",
-  "description": "CorpFlow Workforce Management API - v1.0 (Early Startup Edition)",
+  "version": "2.0.0",
+  "description": "CorpFlow tenant-isolated workforce management API",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
+    "test": "node --test",
     "seed": "psql -U postgres -d corpflow -f schema.sql"
   },
   "dependencies": {

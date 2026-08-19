@@ -1,35 +1,36 @@
 const express = require('express');
-const app = express();
 const usersRouter = require('./routes/users');
 const projectsRouter = require('./routes/projects');
 
-// JSON parsing middleware
+const app = express();
 app.use(express.json());
 
-// Main entry route
 app.get('/', (req, res) => {
   res.json({
     name: 'CorpFlow SaaS API',
-    version: '1.0.0-beta',
+    version: '2.0.0',
     status: 'online',
-    message: 'Welcome to the CorpFlow internal workforce management API.'
+    message: 'Welcome to the tenant-isolated CorpFlow workforce management API.',
+    security: 'Tenant and role context required for protected endpoints.'
   });
 });
 
-// Register routers
 app.use('/users', usersRouter);
 app.use('/projects', projectsRouter);
 
-// Basic 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Endpoint not found.' });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`\n🚀 CorpFlow SaaS API Running on port ${PORT}`);
-  console.log('------------------------------------------');
-  console.log(`Root:     http://localhost:${PORT}/`);
-  console.log(`Users:    http://localhost:${PORT}/users`);
-  console.log(`Projects: http://localhost:${PORT}/projects\n`);
-});
+if (require.main === module) {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`\nCorpFlow SaaS API running on port ${PORT}`);
+    console.log('----------------------------------');
+    console.log(`Root:     http://localhost:${PORT}/`);
+    console.log(`Users:    http://localhost:${PORT}/users`);
+    console.log(`Projects: http://localhost:${PORT}/projects\n`);
+  });
+}
+
+module.exports = app;

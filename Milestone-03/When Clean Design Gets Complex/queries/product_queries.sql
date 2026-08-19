@@ -1,45 +1,81 @@
--- PRODUCT QUERIES
--- These queries simulate common product requests in an application
+-- PRODUCT QUERIES FOR schema/normalized_schema.sql
+-- The normalized design removes comma-separated values and repeated groups.
+-- Queries therefore use joins through the relationship tables where needed.
 
--- Some of these queries will break after normalization.
--- Your job is to update them so they work with your improved schema.
+-- Query 1: Get every product with its supplier.
+SELECT
+    p.product_id,
+    p.product_name,
+    p.price,
+    s.supplier_name,
+    s.supplier_phone,
+    s.supplier_email
+FROM products AS p
+JOIN suppliers AS s
+    ON s.supplier_id = p.supplier_id
+ORDER BY p.product_id;
 
--- Query 1
--- Get all products
+-- Query 2: Find products assigned to a specific category.
+-- The DISTINCT protects the result if additional product relationships are
+-- joined in the future; the composite key already prevents duplicate pairs.
+SELECT DISTINCT
+    p.product_id,
+    p.product_name,
+    p.price
+FROM products AS p
+JOIN product_categories AS pc
+    ON pc.product_id = p.product_id
+JOIN categories AS c
+    ON c.category_id = pc.category_id
+WHERE c.category_name = 'Electronics'
+ORDER BY p.product_name;
 
-SELECT * FROM products;
+-- Query 3: Find supplier details for every product.
+SELECT
+    p.product_name,
+    s.supplier_name,
+    s.supplier_phone,
+    s.supplier_email
+FROM products AS p
+JOIN suppliers AS s
+    ON s.supplier_id = p.supplier_id
+ORDER BY p.product_name;
 
+-- Query 4: Find products whose stock is below the threshold in any warehouse.
+SELECT
+    p.product_name,
+    w.warehouse_location,
+    i.stock_quantity
+FROM products AS p
+JOIN inventory AS i
+    ON i.product_id = p.product_id
+JOIN warehouses AS w
+    ON w.warehouse_id = i.warehouse_id
+WHERE i.stock_quantity < 10
+ORDER BY i.stock_quantity ASC, p.product_name;
 
+-- Query 5: Return a product's categories without storing a list in products.
+SELECT
+    p.product_id,
+    p.product_name,
+    c.category_name
+FROM products AS p
+JOIN product_categories AS pc
+    ON pc.product_id = p.product_id
+JOIN categories AS c
+    ON c.category_id = pc.category_id
+WHERE p.product_id = :product_id
+ORDER BY c.category_name;
 
--- Query 2
--- Find products under a specific category
--- NOTE: This will break after normalization
-
-SELECT *
-FROM products
-WHERE categories LIKE '%Electronics%';
-
-
-
--- Query 3
--- Find supplier details for a product
--- NOTE: supplier data currently lives inside products table
-
-SELECT product_name, supplier_name, supplier_phone
-FROM products;
-
-
-
--- Query 4
--- Find products with low stock
-
-SELECT product_name, stock_quantity
-FROM products
-WHERE stock_quantity < 10;
-
-
-
--- TODO FOR LEARNERS
--- After normalizing the schema:
--- 1. Rewrite these queries using JOINs
--- 2. Ensure the same information can still be retrieved
+-- Query 6: Return a product's tags without storing a list in products.
+SELECT
+    p.product_id,
+    p.product_name,
+    t.tag_name
+FROM products AS p
+JOIN product_tags AS pt
+    ON pt.product_id = p.product_id
+JOIN tags AS t
+    ON t.tag_id = pt.tag_id
+WHERE p.product_id = :product_id
+ORDER BY t.tag_name;

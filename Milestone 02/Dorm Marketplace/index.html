@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Dormly is a focused campus marketplace MVP for safe, local item handoffs." />
+    <title>Dormly — Campus Marketplace</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="Dormly home">
+          <span class="brand-mark">D</span>
+          <span>Dormly</span>
+        </a>
+        <div class="topbar-context">
+          <span class="pulse-dot" aria-hidden="true"></span>
+          <span>Northbridge campus</span>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-button" type="button" aria-label="Notifications">
+            <span aria-hidden="true">♢</span>
+            <span class="notification-dot"></span>
+          </button>
+          <div class="avatar avatar-small" aria-hidden="true">AJ</div>
+          <span class="profile-name">Alex Johnson</span>
+        </div>
+      </header>
+
+      <div class="app-body">
+        <aside class="sidebar">
+          <div class="sidebar-section">
+            <p class="eyebrow">Workspace</p>
+            <nav class="primary-nav" aria-label="Primary navigation">
+              <a class="nav-link active" href="#listings"><span class="nav-icon">▦</span>Marketplace</a>
+              <a class="nav-link" href="#activity"><span class="nav-icon">◷</span>My activity <span class="nav-count" id="activityCount">0</span></a>
+            </nav>
+          </div>
+
+          <div class="sidebar-section sidebar-stats">
+            <p class="eyebrow">Your snapshot</p>
+            <div class="stat-row"><span>Active listings</span><strong id="activeListingCount">0</strong></div>
+            <div class="stat-row"><span>Reserved today</span><strong id="reservedCount">0</strong></div>
+            <div class="stat-row"><span>Completed handoffs</span><strong id="completedCount">0</strong></div>
+          </div>
+
+          <div class="sidebar-bottom">
+            <div class="safety-card">
+              <div class="safety-icon">✓</div>
+              <div>
+                <strong>Campus-safe handoffs</strong>
+                <p>Meet in a public campus spot. No shipping or payments here.</p>
+              </div>
+            </div>
+            <button class="text-button" id="resetDemo" type="button">Reset demo data <span aria-hidden="true">↻</span></button>
+          </div>
+        </aside>
+
+        <main class="main-content" id="listings">
+          <div class="page-heading">
+            <div>
+              <p class="eyebrow accent">Marketplace / Spring term</p>
+              <h1>Find a second life for good stuff.</h1>
+              <p class="heading-copy">A small, trusted marketplace for the things already on campus.</p>
+            </div>
+            <button class="button button-primary" id="openListingModal" type="button"><span class="button-plus">+</span> List an item</button>
+          </div>
+
+          <section class="system-banner" aria-label="Marketplace status">
+            <div class="banner-icon">↗</div>
+            <div class="banner-copy"><strong>Marketplace state is protected.</strong><span>Claims are exclusive, reservations expire in 60 seconds, and sellers can override any listing.</span></div>
+            <span class="live-badge"><span class="pulse-dot"></span>Live demo</span>
+          </section>
+
+          <div class="toolbar">
+            <div class="search-wrap">
+              <span class="search-icon" aria-hidden="true">⌕</span>
+              <label class="sr-only" for="searchInput">Search listings</label>
+              <input id="searchInput" type="search" placeholder="Search books, lamps, bikes..." autocomplete="off" />
+              <kbd>/</kbd>
+            </div>
+            <div class="filter-wrap">
+              <label class="sr-only" for="categoryFilter">Filter by category</label>
+              <select id="categoryFilter">
+                <option value="all">All categories</option>
+                <option value="Textbooks">Textbooks</option>
+                <option value="Room essentials">Room essentials</option>
+                <option value="Electronics">Electronics</option>
+                <option value="Furniture">Furniture</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="view-toggle" aria-label="View options"><button class="view-button active" type="button" aria-label="Grid view">▦</button><button class="view-button" type="button" aria-label="List view">≡</button></div>
+          </div>
+
+          <div class="section-heading">
+            <div><h2>Nearby listings <span class="heading-count" id="listingCount">0</span></h2><p>Available for pickup across Northbridge campus</p></div>
+            <span class="sort-label">Recently listed <span aria-hidden="true">⌄</span></span>
+          </div>
+
+          <section class="listing-grid" id="listingGrid" aria-live="polite"></section>
+
+          <section class="activity-section" id="activity">
+            <div class="section-heading activity-heading"><div><h2>Recent activity</h2><p>Every state change is visible to keep handoffs predictable.</p></div><span class="activity-legend"><span class="legend-dot green"></span>State log</span></div>
+            <div class="activity-list" id="activityLog"></div>
+          </section>
+
+          <footer class="app-footer"><span>Dormly MVP · Built for a better campus loop</span><span>All handoffs happen in person.</span></footer>
+        </main>
+      </div>
+    </div>
+
+    <dialog class="modal" id="listingModal">
+      <form class="modal-card" id="listingForm" method="dialog">
+        <button class="modal-close" type="button" data-close-modal="listingModal" aria-label="Close">×</button>
+        <p class="eyebrow accent">Create listing</p>
+        <h2>Give something useful a new home.</h2>
+        <p class="modal-copy">Keep it local, clear, and easy to hand off.</p>
+        <div class="form-grid">
+          <label class="field field-wide"><span>Item name</span><input name="title" required placeholder="e.g. Mini fridge" /></label>
+          <label class="field"><span>Category</span><select name="category" required><option value="">Choose one</option><option>Textbooks</option><option>Room essentials</option><option>Electronics</option><option>Furniture</option><option>Other</option></select></label>
+          <label class="field"><span>Condition</span><select name="condition" required><option value="">Choose one</option><option>Like new</option><option>Good</option><option>Fair</option></select></label>
+          <label class="field"><span>Price (₹)</span><input name="price" type="number" min="0" value="0" required /></label>
+          <label class="field field-wide"><span>Pickup spot</span><input name="pickup" required placeholder="e.g. Maple Hall lobby" /></label>
+        </div>
+        <div class="modal-actions"><button class="button button-secondary" type="button" data-close-modal="listingModal">Cancel</button><button class="button button-primary" type="submit">Publish listing</button></div>
+      </form>
+    </dialog>
+
+    <dialog class="modal" id="claimModal">
+      <form class="modal-card claim-card" id="claimForm" method="dialog">
+        <button class="modal-close" type="button" data-close-modal="claimModal" aria-label="Close">×</button>
+        <div class="claim-icon">✦</div>
+        <p class="eyebrow accent">Reserve this item</p>
+        <h2 id="claimTitle">Claim listing</h2>
+        <p class="modal-copy">Your reservation will hold the item for <strong>60 seconds</strong>. Confirm the handoff before the timer ends.</p>
+        <input type="hidden" name="itemId" />
+        <label class="field"><span>Your name</span><input name="buyerName" required value="Maya Patel" /></label>
+        <div class="modal-actions"><button class="button button-secondary" type="button" data-close-modal="claimModal">Not yet</button><button class="button button-primary" type="submit">Claim item</button></div>
+      </form>
+    </dialog>
+
+    <div class="toast-region" id="toastRegion" aria-live="polite" aria-atomic="true"></div>
+    <script type="module" src="app.js"></script>
+  </body>
+</html>

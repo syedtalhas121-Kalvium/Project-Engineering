@@ -4,7 +4,7 @@ TrackFlow is an event tracking and analytics API for SaaS products. This impleme
 
 ## Live Deployment
 
-The repository is public at [syedtalhas121-Kalvium/Project-Engineering](https://github.com/syedtalhas121-Kalvium/Project-Engineering). The API can be deployed to Render or Railway using the root of this challenge directory, with `npm install` as the build command and `npm start` as the start command. Configure `PRIMARY_DB_URL` and `REPLICA_DB_URL`; both may point to the same PostgreSQL instance for a demo.
+The repository is public at [syedtalhas121-Kalvium/Project-Engineering](https://github.com/syedtalhas121-Kalvium/Project-Engineering). A verified live demo is available at [https://3100-irc49gbvj884audk3jv8q-6f5ac53f.sg1.manus.computer](https://3100-irc49gbvj884audk3jv8q-6f5ac53f.sg1.manus.computer) and its [health endpoint](https://3100-irc49gbvj884audk3jv8q-6f5ac53f.sg1.manus.computer/health). This is a temporary public demo URL for the submission environment. For a persistent deployment, use Render or Railway with `npm install` as the build command and `npm start` as the start command. Configure `PRIMARY_DB_URL` and `REPLICA_DB_URL`; both may point to the same PostgreSQL instance for a demo.
 
 ## Getting Started
 

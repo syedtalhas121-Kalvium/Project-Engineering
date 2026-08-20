@@ -1,63 +1,56 @@
-// src/user.controller.js
-//
-// KNOWN BUGS — do not fix these until you have built the safety net:
-//
-// Bug 1 — Inconsistent error shapes across three endpoints.
-// Bug 2 — Duplicate email triggers a raw Prisma P2002 error.
-// Bug 3 — deleteUser has no try/catch at all (Prisma P2025 crashes the app).
-// Bug 4 — crashTest throws a raw Error that sends an HTML stack trace.
-
 const prisma = require('./lib/db');
+const AppError = require('../utils/AppError');
 
 // POST /users
-async function createUser(req, res) {
+async function createUser(req, res, next) {
   const { name, email } = req.body;
 
   if (!name || !email) {
-    // 🚨 BUG 1: Inconsistent error shape. Returns { error: "..." }
-    return res.status(400).json({ error: 'Name and email are required' });
+    return next(new AppError('Name and email are required', 400));
   }
 
   try {
     const user = await prisma.user.create({ data: { name, email } });
     res.status(201).json(user);
   } catch (err) {
-    // 🚨 BUG 1 & 2: Inconsistent shape AND it leaks raw Prisma errors (like P2002).
-    res.status(500).json({ error: err.message });
+    next(err);
   }
 }
 
 // GET /users/:id
-async function getUser(req, res) {
+async function getUser(req, res, next) {
   try {
-    const id = parseInt(req.params.id);
+    const id = parseInt(req.params.id, 10);
     const user = await prisma.user.findUnique({ where: { id } });
 
     if (!user) {
-      // 🚨 BUG 1: Inconsistent error shape. Returns a plain text string!
-      return res.status(404).send('Not found');
+      return next(new AppError('User not found', 404));
     }
 
     res.json(user);
   } catch (err) {
-    // 🚨 BUG 1: It leaks raw Prisma errors
-    res.status(500).json({ message: 'Something broke on the server' });
+    next(err);
   }
 }
 
 // DELETE /users/:id
-async function deleteUser(req, res) {
-  const id = parseInt(req.params.id);
-  
-  // 🚨 BUG 3: Missing try/catch block completely!
-  await prisma.user.delete({ where: { id } });
-  res.status(204).send();
+async function deleteUser(req, res, next) {
+  try {
+    const id = parseInt(req.params.id, 10);
+    await prisma.user.delete({ where: { id } });
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
 }
 
 // GET /users/crash/test
-async function crashTest(req, res) {
-  // 🚨 BUG 4: This intentionally throws an error to simulate a bug. Wrap this in a try/catch and use next(err).
-  throw new Error('Simulated server crash!');
+async function crashTest(req, res, next) {
+  try {
+    throw new Error('Simulated server crash!');
+  } catch (err) {
+    next(err);
+  }
 }
 
 module.exports = { createUser, getUser, deleteUser, crashTest };

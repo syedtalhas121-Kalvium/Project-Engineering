@@ -19,12 +19,12 @@ app.get('/api/orders', async (req, res) => {
   const limit = Number.isFinite(requestedLimit) && requestedLimit > 0
     ? Math.min(requestedLimit, MAX_PAGE_SIZE)
     : DEFAULT_PAGE_SIZE;
-  const skip = (page - 1) * limit;
-
   try {
-    const [total, orders] = await prisma.$transaction([
-      prisma.order.count(),
-      prisma.order.findMany({
+    const total = await prisma.order.count();
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const currentPage = Math.min(page, totalPages);
+    const skip = (currentPage - 1) * limit;
+    const orders = await prisma.order.findMany({
         skip,
         take: limit,
         orderBy: { createdAt: 'desc' },
@@ -55,20 +55,17 @@ app.get('/api/orders', async (req, res) => {
             },
           },
         },
-      }),
-    ]);
-
-    const totalPages = Math.max(1, Math.ceil(total / limit));
+      });
 
     res.json({
       data: orders,
       pagination: {
-        currentPage: page,
+        currentPage,
         pageSize: limit,
         totalPages,
         total,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
+        hasNextPage: currentPage < totalPages,
+        hasPrevPage: currentPage > 1,
       },
     });
   } catch (error) {

@@ -9,11 +9,10 @@ const {
     deleteTask 
 } = require('../controllers/taskController');
 
-// ❌ Bug 4: Missing middleware on specific routes
-router.get('/tasks', authMiddleware, getTasks);      // ✅ protected
-router.post('/tasks', authMiddleware, createTask);   // ✅ protected
-router.put('/tasks/:id', authMiddleware, updateTask); // ✅ protected
-router.get('/tasks/:id', getTaskById);               // ❌ missing authMiddleware
-router.delete('/tasks/:id', deleteTask);             // ❌ missing authMiddleware
+router.get('/tasks', authMiddleware, getTasks);
+router.post('/tasks', authMiddleware, createTask);
+router.put('/tasks/:id', authMiddleware, updateTask);
+router.get('/tasks/:id', authMiddleware, getTaskById);
+router.delete('/tasks/:id', authMiddleware, deleteTask);
 
 module.exports = router;

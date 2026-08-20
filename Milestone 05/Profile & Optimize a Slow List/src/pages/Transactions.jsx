@@ -1,13 +1,23 @@
-import React, { useState } from 'react';
+import React, { Profiler, useCallback, useState } from 'react';
 import { useTransactions } from '../hooks/useTransactions';
 import TransactionList from '../components/TransactionList';
+import ProfilerEvidence from '../components/ProfilerEvidence';
+import { getProfilerStore, recordProfilerCommit, resetRowRenderCount } from '../utils/profiler';
 import { Search, Wallet, TrendingUp, ArrowUpRight, Plus, Filter } from 'lucide-react';
 
 const Transactions = () => {
   const { filteredTransactions, filter, setFilter } = useTransactions();
   const [selectedId, setSelectedId] = useState(null);
+  const handleSelect = useCallback((id) => setSelectedId(id), []);
+  const applyFilter = useCallback((value) => {
+    resetRowRenderCount();
+    setFilter(value);
+  }, [setFilter]);
+  window.__txnSetFilter = applyFilter;
 
   const selectedTransaction = filteredTransactions.find(t => t.id === selectedId);
+
+  getProfilerStore();
 
   return (
     <div className="max-w-6xl mx-auto px-6 py-8">
@@ -23,6 +33,8 @@ const Transactions = () => {
           <span>Add Transaction</span>
         </button>
       </header>
+
+      <ProfilerEvidence />
 
       {/* Stats section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
@@ -51,9 +63,10 @@ const Transactions = () => {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input 
                 type="text"
+                data-testid="search-filter"
                 placeholder="Search transactions or categories..."
                 value={filter}
-                onChange={(e) => setFilter(e.target.value)}
+                onChange={(e) => applyFilter(e.target.value)}
                 className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all shadow-sm font-medium"
               />
             </div>
@@ -78,10 +91,12 @@ const Transactions = () => {
             This creates a new function reference on every single render,
             rendering any potential memoization in child components useless.
           */}
-          <TransactionList 
-            transactions={filteredTransactions} 
-            onSelect={(id) => setSelectedId(id)} 
-          />
+          <Profiler id="TransactionList" onRender={recordProfilerCommit}>
+            <TransactionList 
+              transactions={filteredTransactions} 
+              onSelect={handleSelect} 
+            />
+          </Profiler>
         </div>
 
         {/* Details Sidebar */}

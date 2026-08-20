@@ -1,0 +1,121 @@
+{
+  "info": {
+    "name": "Nexus Supermarket API - Optimization Sprint",
+    "description": "Live checks for pagination, sorting, field selection, validation, and N+1-safe order loading.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    }
+  ],
+  "item": [
+    {
+      "name": "Products - pagination, sorting, and fields",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/products?page=2&limit=3&sortBy=price&order=asc&fields=id,name,price",
+          "host": ["{{baseUrl}}"],
+          "path": ["products"],
+          "query": [
+            {"key": "page", "value": "2"},
+            {"key": "limit", "value": "3"},
+            {"key": "sortBy", "value": "price"},
+            {"key": "order", "value": "asc"},
+            {"key": "fields", "value": "id,name,price"}
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('returns 200', function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test('returns three selected fields per product', function () { pm.expect(body.data).to.have.length(3); pm.expect(Object.keys(body.data[0]).sort()).to.eql(['id', 'name', 'price']); });",
+              "pm.test('returns pagination metadata', function () { pm.expect(body.meta.page).to.eql(2); pm.expect(body.meta.limit).to.eql(3); pm.expect(body.meta.total).to.be.above(0); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products - MAX_LIMIT validation",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/products?limit=101",
+          "host": ["{{baseUrl}}"],
+          "path": ["products"],
+          "query": [{"key": "limit", "value": "101"}]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('rejects a limit above 100 with 400', function () { pm.response.to.have.status(400); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products - field whitelist validation",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/products?fields=id,passwordHash",
+          "host": ["{{baseUrl}}"],
+          "path": ["products"],
+          "query": [{"key": "fields", "value": "id,passwordHash"}]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('rejects unknown fields with 400', function () { pm.response.to.have.status(400); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders - relation include without N+1 loop",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/orders",
+          "host": ["{{baseUrl}}"],
+          "path": ["orders"]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('returns 200', function () { pm.response.to.have.status(200); });",
+              "const body = pm.response.json();",
+              "pm.test('returns orders with a public user object', function () { pm.expect(body).to.be.an('array').that.is.not.empty; pm.expect(body[0].user).to.have.property('email'); pm.expect(body[0].user).to.not.have.property('passwordHash'); });"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ]
+}

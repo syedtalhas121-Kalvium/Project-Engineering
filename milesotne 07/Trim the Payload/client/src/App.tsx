@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { 
   LayoutDashboard, 
   ShoppingBag, 
@@ -27,63 +27,86 @@ interface Order {
   createdAt: string;
   user: {
     id: number;
-    name: string;
+    name: string | null;
     email: string;
-    avatarUrl: string;
-    address: string;
-    bio: string; // Wasteful in list view
+    avatarUrl: string | null;
   };
   items: {
     id: number;
-    productId: number;
     quantity: number;
     price: number;
     product: {
       name: string;
-      image: string;
-      category: {
-        name: string;
-        description: string; // Wasteful in list view
-      }
-    }
+      image: string | null;
+    };
   }[];
 }
 
+interface Pagination {
+  currentPage: number;
+  pageSize: number;
+  totalPages: number;
+  total: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+interface OrdersResponse {
+  data: Order[];
+  pagination: Pagination;
+}
+
+const PAGE_SIZE = 25;
+
 const DashboardApp: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
+  const [pagination, setPagination] = useState<Pagination | null>(null);
+  const [page, setPage] = useState(1);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({
-    totalRevenue: 0,
-    totalOrders: 0,
-    activeCustomers: 0,
-    avgOrderValue: 0
-  });
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    const controller = new AbortController();
 
-  const fetchOrders = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('http://localhost:3001/api/orders');
-      const data = await response.json();
-      setOrders(data);
-      
-      // Calculate mock stats from real data
-      const total = data.reduce((acc: number, o: Order) => acc + (o.total || 0), 0);
-      setStats({
-        totalRevenue: total,
-        totalOrders: data.length,
-        activeCustomers: new Set(data.map((o: Order) => o.user?.id)).size,
-        avgOrderValue: total / (data.length || 1)
-      });
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+    async function fetchOrders() {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await fetch(
+          `http://localhost:3001/api/orders?page=${page}&limit=${PAGE_SIZE}`,
+          { signal: controller.signal },
+        );
+        if (!response.ok) {
+          throw new Error(`Orders request failed with status ${response.status}`);
+        }
+        const result = (await response.json()) as OrdersResponse;
+        setOrders(result.data);
+        setPagination(result.pagination);
+      } catch (requestError) {
+        if (requestError instanceof DOMException && requestError.name === 'AbortError') return;
+        console.error(requestError);
+        setError('Unable to load orders. Check that the API server is running.');
+      } finally {
+        if (!controller.signal.aborted) setLoading(false);
+      }
     }
-  };
+
+    fetchOrders();
+    return () => controller.abort();
+  }, [page, refreshKey]);
+
+  const stats = useMemo(() => {
+    const total = orders.reduce((acc, order) => acc + (order.total || 0), 0);
+    return {
+      totalRevenue: total,
+      totalOrders: orders.length,
+      activeCustomers: new Set(orders.map((order) => order.user?.id)).size,
+      avgOrderValue: total / (orders.length || 1),
+    };
+  }, [orders]);
+
+  const refreshPage = () => setRefreshKey((current) => current + 1);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -148,12 +171,17 @@ const DashboardApp: React.FC = () => {
 
         {/* Dashboard Content */}
         <div className="flex-1 overflow-y-auto p-8">
+          {error && (
+            <div className="max-w-7xl mx-auto mb-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700" role="alert">
+              {error}
+            </div>
+          )}
           <div className="max-w-7xl mx-auto space-y-8">
             <div className="flex items-center justify-between">
               <h1 className="text-2xl font-bold text-slate-900 tracking-tight">Orders Performance Dashboard</h1>
               <div className="flex gap-3">
                 <button 
-                  onClick={fetchOrders}
+                  onClick={refreshPage}
                   disabled={loading}
                   className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm font-medium hover:bg-primary-700 transition-colors flex items-center gap-2"
                 >
@@ -166,9 +194,9 @@ const DashboardApp: React.FC = () => {
             {/* Stats Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {[
-                { label: 'Total Revenue', value: `$${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-                { label: 'Active Orders', value: stats.totalOrders.toString(), icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-50' },
-                { label: 'Total Customers', value: stats.activeCustomers.toString(), icon: Users, color: 'text-violet-600', bg: 'bg-violet-50' },
+                { label: 'Page Revenue', value: `$${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                { label: 'Orders on Page', value: stats.totalOrders.toString(), icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-50' },
+                { label: 'Customers on Page', value: stats.activeCustomers.toString(), icon: Users, color: 'text-violet-600', bg: 'bg-violet-50' },
                 { label: 'Avg Order Value', value: `$${stats.avgOrderValue.toFixed(2)}`, icon: TrendingUp, color: 'text-amber-600', bg: 'bg-amber-50' },
               ].map((stat, i) => (
                 <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm transition-transform hover:scale-[1.02]">
@@ -227,7 +255,7 @@ const DashboardApp: React.FC = () => {
                           <td className="px-6 py-4 font-mono font-medium text-slate-400">#{order.id.toString().padStart(4, '0')}</td>
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              <img src={order.user.avatarUrl} className="w-8 h-8 rounded-full bg-slate-100" />
+                              <img src={order.user.avatarUrl ?? undefined} alt="Customer avatar" className="w-8 h-8 rounded-full bg-slate-100" />
                               <div>
                                 <p className="font-semibold text-slate-900">{order.user.name}</p>
                                 <p className="text-xs text-slate-500">{order.user.email}</p>
@@ -262,10 +290,31 @@ const DashboardApp: React.FC = () => {
                   </tbody>
                 </table>
               </div>
-              <div className="px-6 py-4 bg-slate-50 border-t border-slate-200/50 flex justify-end">
-                <p className="text-xs text-rose-600 font-bold italic">
-                  Critical Lag: ~{(JSON.stringify(orders).length / 1024).toFixed(1)} KB payload (500+ items, N+1 Query, No Pagination)
+              <div className="px-6 py-4 bg-slate-50 border-t border-slate-200/50 flex items-center justify-between gap-4">
+                <p className="text-xs text-slate-500">
+                  {pagination ? `Showing ${(pagination.currentPage - 1) * pagination.pageSize + 1}-${Math.min(pagination.currentPage * pagination.pageSize, pagination.total)} of ${pagination.total} orders` : 'Loading order totals...'}
                 </p>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPage((current) => Math.max(1, current - 1))}
+                    disabled={loading || !pagination?.hasPrevPage}
+                    className="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs font-semibold text-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Previous
+                  </button>
+                  <span className="text-xs font-semibold text-slate-500">
+                    Page {pagination?.currentPage ?? page} of {pagination?.totalPages ?? '…'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setPage((current) => current + 1)}
+                    disabled={loading || !pagination?.hasNextPage}
+                    className="px-3 py-1.5 rounded-lg border border-primary-200 bg-primary-50 text-xs font-semibold text-primary-700 disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Next
+                  </button>
+                </div>
               </div>
             </div>
           </div>

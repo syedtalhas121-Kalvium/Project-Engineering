@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { getProfilerStore } from '../utils/profiler';
 
 const formatDuration = (value) => (
-  typeof value === 'number' ? `${value.toFixed(2)} ms` : '—'
+  typeof value === 'number' ? `${value.toFixed(4)} ms` : '—'
 );
 
 const ProfilerEvidence = () => {
@@ -16,11 +16,11 @@ const ProfilerEvidence = () => {
     const query = new URLSearchParams(window.location.search).get('profile');
     if (query) {
       const timer = window.setTimeout(() => {
-        const input = document.querySelector('[data-testid="search-filter"]');
-        if (!input) return;
-        const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
-        setter.call(input, query);
-        input.dispatchEvent(new Event('input', { bubbles: true }));
+        if (window.__txnProfileTriggered) return;
+        window.__txnProfileTriggered = true;
+        if (typeof window.__txnSetFilter === 'function') {
+          window.__txnSetFilter(query);
+        }
       }, 700);
       return () => {
         window.clearTimeout(timer);
@@ -55,7 +55,7 @@ const ProfilerEvidence = () => {
         </div>
         <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">
           <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Last search interaction</p>
-          <p className="mt-2 text-2xl font-black text-emerald-300">{formatDuration(update?.actualDuration)}</p>
+          <p className="mt-2 text-2xl font-black text-emerald-300">{formatDuration(update?.interactionDuration ?? update?.actualDuration)}</p>
           <p className="mt-1 text-xs text-slate-400">Update commit after typing</p>
         </div>
         <div className="rounded-xl border border-slate-800 bg-slate-900 p-4">

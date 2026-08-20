@@ -28,10 +28,8 @@ const STATUS_COLORS = {
   failed: "bg-red-100 text-red-700",
 };
 
-// DELIBERATE PERFORMANCE PROBLEM:
-// This component is NOT wrapped in React.memo()
 const TransactionRow = ({ transaction, onSelect }) => {
-  recordRowRender();
+  recordRowRender(transaction.id);
   const Icon = CATEGORY_ICONS[transaction.category] || CreditCard;
   const dateStr = new Date(transaction.date).toLocaleDateString('en-US', {
     month: 'short',
@@ -85,4 +83,4 @@ const TransactionRow = ({ transaction, onSelect }) => {
   );
 };
 
-export default TransactionRow;
+export default React.memo(TransactionRow);

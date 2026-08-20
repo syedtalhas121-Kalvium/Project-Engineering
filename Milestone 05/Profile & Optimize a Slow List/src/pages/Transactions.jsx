@@ -1,13 +1,19 @@
-import React, { Profiler, useState } from 'react';
+import React, { Profiler, useCallback, useState } from 'react';
 import { useTransactions } from '../hooks/useTransactions';
 import TransactionList from '../components/TransactionList';
 import ProfilerEvidence from '../components/ProfilerEvidence';
-import { getProfilerStore, recordProfilerCommit } from '../utils/profiler';
+import { getProfilerStore, recordProfilerCommit, resetRowRenderCount } from '../utils/profiler';
 import { Search, Wallet, TrendingUp, ArrowUpRight, Plus, Filter } from 'lucide-react';
 
 const Transactions = () => {
   const { filteredTransactions, filter, setFilter } = useTransactions();
   const [selectedId, setSelectedId] = useState(null);
+  const handleSelect = useCallback((id) => setSelectedId(id), []);
+  const applyFilter = useCallback((value) => {
+    resetRowRenderCount();
+    setFilter(value);
+  }, [setFilter]);
+  window.__txnSetFilter = applyFilter;
 
   const selectedTransaction = filteredTransactions.find(t => t.id === selectedId);
 
@@ -60,7 +66,7 @@ const Transactions = () => {
                 data-testid="search-filter"
                 placeholder="Search transactions or categories..."
                 value={filter}
-                onChange={(e) => setFilter(e.target.value)}
+                onChange={(e) => applyFilter(e.target.value)}
                 className="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-brand-500 focus:border-transparent outline-none transition-all shadow-sm font-medium"
               />
             </div>
@@ -88,7 +94,7 @@ const Transactions = () => {
           <Profiler id="TransactionList" onRender={recordProfilerCommit}>
             <TransactionList 
               transactions={filteredTransactions} 
-              onSelect={(id) => setSelectedId(id)} 
+              onSelect={handleSelect} 
             />
           </Profiler>
         </div>

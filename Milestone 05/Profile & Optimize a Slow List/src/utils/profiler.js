@@ -2,6 +2,8 @@ const createProfilerStore = () => ({
   initial: null,
   lastUpdate: null,
   rowRenders: 0,
+  rowIds: new Set(),
+  interactionStart: null,
 });
 
 export const getProfilerStore = () => {
@@ -14,12 +16,20 @@ export const getProfilerStore = () => {
 
 export const resetRowRenderCount = () => {
   const store = getProfilerStore();
-  if (store) store.rowRenders = 0;
+  if (store) {
+    store.rowRenders = 0;
+    store.rowIds.clear();
+    store.lastUpdate = null;
+    store.interactionStart = performance.now();
+  }
 };
 
-export const recordRowRender = () => {
+export const recordRowRender = (id) => {
   const store = getProfilerStore();
-  if (store) store.rowRenders += 1;
+  if (store) {
+    store.rowIds.add(id);
+    store.rowRenders = store.rowIds.size;
+  }
 };
 
 export const recordProfilerCommit = (
@@ -40,14 +50,19 @@ export const recordProfilerCommit = (
     baseDuration,
     startTime,
     commitTime,
-    rowRenders: store.rowRenders,
+    interactionDuration: store.interactionStart === null
+      ? actualDuration
+      : performance.now() - store.interactionStart,
+    rowRenders: store.rowIds.size,
   };
 
   if (phase === 'mount' && !store.initial) {
     store.initial = commit;
-  } else if (phase === 'update') {
+  } else if (phase === 'update' && !store.lastUpdate) {
     store.lastUpdate = commit;
   }
 
+  store.rowRenders = 0;
+  store.rowIds.clear();
   window.dispatchEvent(new CustomEvent('txn-profiler-update'));
 };

@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 
 const AuthContext = createContext(null);
 
@@ -30,12 +30,19 @@ export const AuthProvider = ({ children }) => {
     setToken(userToken);
   };
 
-  const logout = () => {
+  const logout = useCallback(() => {
     setUser(null);
     setToken(null);
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-  };
+  }, []);
+
+  useEffect(() => {
+    const handleUnauthorized = () => logout();
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+  }, [logout]);
 
   return (
     <AuthContext.Provider value={{ user, token, login, logout, setUser, setToken }}>

@@ -1,37 +1,48 @@
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
+'use strict';
+
+const prisma = require('../db');
+
+function roundCurrency(value) {
+    return Math.round((value + Number.EPSILON) * 100) / 100;
+}
 
 exports.createExpense = async (data) => {
-    // Zero validation for payer existence or amount format. 
-    return await prisma.expense.create({
+    const description = typeof data.description === 'string' ? data.description.trim() : '';
+    const amount = Number(data.amount);
+    const payerId = Number(data.payerId);
+
+    if (!description || !Number.isFinite(amount) || amount <= 0 || !Number.isInteger(payerId)) {
+        const error = new Error('description, a positive amount, and an integer payerId are required');
+        error.statusCode = 400;
+        throw error;
+    }
+
+    return prisma.expense.create({
         data: {
-            description: data.description,
-            amount: parseFloat(data.amount),
-            payerId: parseInt(data.payerId)
+            description,
+            amount: roundCurrency(amount),
+            payerId
         }
     });
 };
 
-exports.getAllExpenses = async () => {
-    // No sorting, no relations joined.
-    return await prisma.expense.findMany({ include: { payer: true } });
-};
+exports.getAllExpenses = async () => prisma.expense.findMany({
+    include: { payer: true },
+    orderBy: { createdAt: 'desc' }
+});
 
 exports.calculateBalances = async () => {
     const roommates = await prisma.roommate.findMany({ include: { expenses: true } });
     const expenses = await prisma.expense.findMany();
-    
-    // Messy math without proper rounding or checks.
-    const total = expenses.reduce((acc, curr) => acc + curr.amount, 0);
-    const count = roommates.length || 1; 
-    const share = total / count;
-    
-    const results = roommates.map(r => {
-        const paid = r.expenses.reduce((acc, curr) => acc + curr.amount, 0);
+    const total = roundCurrency(expenses.reduce((acc, curr) => acc + curr.amount, 0));
+    const share = roommates.length ? roundCurrency(total / roommates.length) : 0;
+
+    const results = roommates.map((roommate) => {
+        const paid = roundCurrency(roommate.expenses.reduce((acc, expense) => acc + expense.amount, 0));
         return {
-            name: r.name,
-            paid: paid,
-            balance: paid - share
+            name: roommate.name,
+            paid,
+            balance: roundCurrency(paid - share)
         };
     });
 

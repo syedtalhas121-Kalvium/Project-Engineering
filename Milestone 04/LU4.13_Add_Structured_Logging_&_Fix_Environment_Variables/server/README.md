@@ -1,8 +1,8 @@
-# 🏠 Roommate Expense Wars (Starter Repo)
+# Roommate Expense Wars Backend
 
-Welcome to the Roommate Expense Wars backend! This project is designed to help roommates track shared costs and see who owes what.
+This backend tracks shared roommate expenses, returns balances, and exposes a small Express API. It is configured for predictable local and production startup with environment-backed configuration and structured observability.
 
-**⚠️ Warning: This repository is intentionally "broken" in terms of production best practices. Your task as an engineer is to identify and fix these architectural flaws.**
+The implementation focuses on reliability, debuggability, and portability without expanding the product scope.
 
 ## 🎯 Project Goals
 
@@ -10,35 +10,25 @@ The objective of this challenge is not to build features, but to improve the **r
 
 ## 🛠 Setup Instructions
 
-<pre>
-1. cd server
-2. npm install
-3. Setup your PostgreSQL database
-4. Edit the DATABASE_URL in prisma/schema.prisma (currently hardcoded!)
-5. Run npm run prisma:migrate
-6. Run npm run dev to start the server
-</pre>
+From this directory, install dependencies and create a local configuration file:
 
-## 🚀 Final List of Issues in the Broken Repo
+```bash
+npm install
+cp .env.example .env
+```
 
-These are the backend-specific flaws you must identify and resolve within the `broken-repo/server` folder:
+Set `DATABASE_URL` to a PostgreSQL database, replace `JWT_SECRET` with a long random value, and choose an available `PORT`. Then generate the Prisma client and apply the migration:
 
-### 1. Configuration & Security
-*   **Hardcoded Secrets**: The `DATABASE_URL` is hardcoded directly inside both `prisma/schema.prisma` and `prisma/prisma.config.ts`, exposing credentials and preventing environment-based configuration.
-*   **Improper Prisma Configuration**: Prisma is not correctly using environment variables via `prisma.config.ts`, breaking portability across environments.
-*   **Hardcoded Port**: The Express server runs on a fixed port (3000) instead of using `process.env.PORT`, making it incompatible with production environments.
-*   **Missing Environment Files**: No `.env` or `.env.example` file is provided, making it unclear what configuration is required to run the application.
+```bash
+npm run prisma:generate
+npm run prisma:migrate
+npm run dev
+```
 
-### 2. Logging & Observability
-*   **Disabled Logging Middleware**: Morgan is installed but not registered as middleware, resulting in no request/response lifecycle logging.
-*   **Scattered Console Logs**: Debugging relies on `console.log(req.body)` inside controllers instead of a structured logging approach.
-*   **No Request Traceability**: Logs do not include request context (method, route, status), making it difficult to trace failures.
-*   **Poor Error Visibility**: When errors occur, the server logs vague messages without useful debugging information such as stack traces or structured output.
+The process fails before listening if `DATABASE_URL`, `JWT_SECRET`, or `PORT` is missing or invalid. `NODE_ENV` defaults to `development` when omitted.
 
-### 3. Error Discipline & Reliability
-*   **No Startup Validation**: The server starts without verifying whether required environment variables (`PORT`, `DATABASE_URL`, `JWT_SECRET`) are present, leading to unpredictable runtime failures.
-*   **No Fail-Fast Behavior**: The application does not validate configuration before booting, violating production reliability practices.
-*   **Poor Error Responses**: Controllers return generic responses like `{ error: "Fail" }` without meaningful context, making debugging difficult for both developers and clients.
-*   **No Centralized Error Handling**: Errors are handled inconsistently and are not delegated to a central error handler, leading to scattered and unreliable error behavior.
+## Implementation summary
 
-Good luck! 🍀
+The server now validates its required environment variables before booting, loads the Prisma datasource from `DATABASE_URL`, and uses `PORT` rather than a source-level constant. Morgan and the shared JSON logger provide request and application visibility with request IDs, durations, statuses, and serialized stack traces. Controllers pass failures to centralized Express error middleware, which returns a safe error body containing the correlation ID.
+
+The committed `.env.example` documents the configuration contract, while `.env`, local databases, and dependencies are excluded from version control. See [`Changes.md`](./Changes.md) for the reasoning and verification record.

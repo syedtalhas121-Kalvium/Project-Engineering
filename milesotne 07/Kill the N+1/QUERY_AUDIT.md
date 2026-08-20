@@ -32,10 +32,46 @@ Response time: **5.606 ms**
 
 The N+1 loop was at `src/services/orderService.js:8-14`, with the per-order `prisma.orderItem.findMany()` call at lines 9-12.
 
-## Baseline Response Snapshots
+## After Fix
 
-The raw JSON responses captured before the fix were compared with the after-fix responses outside the repository. They contained 20 records for each endpoint.
+### GET /posts
 
-## Required Follow-up
+DB queries for 20 records: **2**
 
-After the service changes, this document will record the one-query results, response-time measurements, and structural response verification for both endpoints.
+Implementation: `prisma.post.findMany()` now uses `include.author` with a scoped `select` for `id`, `name`, and `email`. With this SQLite Prisma setup, the relation include is emitted as two SQL statements: one for posts and one batched query for all related users. There is no per-post query loop.
+
+Response time before: **9.930 ms**
+
+Response time after: **8.112 ms**
+
+Measured timing improvement: **18% faster** in this single local request. The query count is unchanged from the already-batched baseline, but the service no longer relies on per-record lookup behavior and expresses the relation as one eager-loaded Prisma operation.
+
+### GET /orders
+
+DB queries for 20 records: **2**
+
+Implementation: `prisma.order.findMany()` now uses `include.items` with a scoped `select` for `id`, `productName`, `quantity`, and `price`. The relation is loaded with one batched `OrderItem` query for all 20 orders instead of one query per order.
+
+Response time before: **5.606 ms**
+
+Response time after: **2.581 ms**
+
+Measured timing improvement: **53% faster** in this single local request, with **19 fewer SQL queries** (21 → 2).
+
+## API Response Verification
+
+The before and after JSON files were compared programmatically after reseeding was not required and the underlying data remained unchanged.
+
+| Endpoint | Before records | After records | Exact JSON equality | Top-level fields preserved |
+| --- | ---: | ---: | --- | --- |
+| `GET /posts` | 20 | 20 | ✅ Identical | ✅ `id`, `title`, `body`, `createdAt`, `author` |
+| `GET /orders` | 20 | 20 | ✅ Identical | ✅ `id`, `reference`, `status`, `createdAt`, `items` |
+
+The nested response structures are also identical. Posts retain the same author fields (`id`, `name`, `email`), and orders retain the same item fields (`id`, `productName`, `quantity`, `price`). The changes affect only how Prisma loads related data.
+
+## Query Count Summary
+
+| Endpoint | Before | After | Reduction |
+| --- | ---: | ---: | ---: |
+| `GET /posts` | 2 | 2 | 0 SQL statements; per-record lookup removed |
+| `GET /orders` | 21 | 2 | 19 SQL statements; 90% fewer |

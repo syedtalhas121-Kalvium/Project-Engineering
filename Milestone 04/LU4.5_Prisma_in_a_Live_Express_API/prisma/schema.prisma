@@ -19,8 +19,7 @@ model Product {
   id     Int     @id @default(autoincrement())
   name   String
   price  Float
-  // 🚨 TASK 02 — stock field is intentionally missing.
-  // Add it here before running the migration.
+  stock  Int     @default(0)
   orders Order[]
 }
 
@@ -33,3 +32,8 @@ model Order {
   product   Product  @relation(fields: [productId], references: [id])
   createdAt DateTime @default(now())
 }
+
+// The Product.stock field is intentionally managed through Prisma migrations.
+// Do not edit the database schema directly; run `npx prisma migrate dev` instead.
+
+// The generated client is shared by all controllers through src/lib/db.js.

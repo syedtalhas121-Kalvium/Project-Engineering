@@ -1,25 +1,36 @@
-const { Pool } = require('pg');
-const { PrismaClient } = require('@prisma/client');
+const prisma = require('./lib/db');
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient();
+function parseId(value) {
+  const id = Number.parseInt(value, 10);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
 
 async function getProducts(req, res) {
   try {
-    const result = await pool.query('SELECT * FROM products');
-    res.json(result.rows);
+    const products = await prisma.product.findMany();
+    res.json(products);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 }
 
 async function getProductById(req, res) {
+  const id = parseId(req.params.id);
+
+  if (id === null) {
+    return res.status(400).json({ error: 'Product id must be a positive integer' });
+  }
+
   try {
-    const id = parseInt(req.params.id);
     const product = await prisma.product.findUnique({ where: { id } });
-    res.json({ name: product.name, price: product.price });
+
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    return res.json(product);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({ error: err.message });
   }
 }
 

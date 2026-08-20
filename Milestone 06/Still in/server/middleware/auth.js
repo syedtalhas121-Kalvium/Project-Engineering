@@ -13,10 +13,11 @@ const authMiddleware = (req, res, next) => {
     req.user = decoded;
     next();
   } catch (err) {
-    // INTENTIONAL MISHANDLING FOR STUDENT TO FIX
-    // It captures all errors (including expiry) and returns 500
-    // Should return 401 for TokenExpiredError
-    res.status(500).json({ message: "Invalid token", error: err.message });
+    if (err.name === "TokenExpiredError") {
+      return res.status(401).json({ message: "Session expired. Please log in again." });
+    }
+
+    return res.status(401).json({ message: "Invalid token" });
   }
 };
 

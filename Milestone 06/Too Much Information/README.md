@@ -69,3 +69,22 @@ CorpAuth is a working Node.js auth API. Users can sign up, log in, and fetch the
 ## Submission
 - Provide the Pull Request (PR) link from your `challenge-solution` branch to `main`.
 - Include a video link demonstrating the audit process and the final secure responses.
+
+
+## Live Deployment
+
+A live deployment is pending and will be added after the deployment platform is configured. Until then, the completed public assignment directory is available at:
+
+https://github.com/syedtalhas121-Kalvium/Project-Engineering/tree/challenge-solution-auth-response/Milestone%2006/Too%20Much%20Information
+
+This URL is an interim code-review and submission reference; it is not represented as a live API endpoint.
+
+## Verification
+
+Run the focused response-contract tests with:
+
+```bash
+npm test
+```
+
+The tests verify that the auth and profile mappers exclude password hashes, privilege flags, billing identifiers, bearer tokens, network metadata, internal feature flags, compensation data, and record-maintenance metadata.

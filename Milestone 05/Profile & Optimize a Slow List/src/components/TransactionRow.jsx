@@ -2,6 +2,7 @@ import React from 'react';
 import { CreditCard, Calendar, ShoppingBag, Tv, Utensils, Truck, Zap } from 'lucide-react';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { recordRowRender } from '../utils/profiler';
 
 const cn = (...inputs) => twMerge(clsx(inputs));
 
@@ -30,6 +31,7 @@ const STATUS_COLORS = {
 // DELIBERATE PERFORMANCE PROBLEM:
 // This component is NOT wrapped in React.memo()
 const TransactionRow = ({ transaction, onSelect }) => {
+  recordRowRender();
   const Icon = CATEGORY_ICONS[transaction.category] || CreditCard;
   const dateStr = new Date(transaction.date).toLocaleDateString('en-US', {
     month: 'short',
@@ -38,7 +40,8 @@ const TransactionRow = ({ transaction, onSelect }) => {
   });
 
   return (
-    <div 
+    <div
+      data-transaction-row
       onClick={() => onSelect(transaction.id)}
       className="group flex items-center gap-4 p-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer"
     >

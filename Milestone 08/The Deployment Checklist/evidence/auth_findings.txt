@@ -1,0 +1,3 @@
+Public authentication verification, 2026-08-21:
+
+At the public frontend URL, the login form accepted the seeded admin credentials. After submission, the UI returned to the inventory dashboard and displayed the authenticated state "Admin User (admin)" with a Logout control and the admin-only "Create New Asset" form. This confirms the end-to-end login state and protected admin UI at the exposed public URL.

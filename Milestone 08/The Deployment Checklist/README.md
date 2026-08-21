@@ -68,3 +68,27 @@ All checklist items must reach PASS status (except Item 12 which may be SKIP).
 1. Push your code to a public GitHub repository.
 2. Complete the `DEPLOYMENT_CHECKLIST.md`.
 3. Provide your live URL in the checklist.
+
+## Completed Deployment Hardening
+
+The deployment configuration now includes a repository-level Prisma migration, a backend `db:migrate` script that runs `prisma migrate deploy --schema=../prisma/schema.prisma`, and a Render Blueprint in `render.yaml`. The backend exposes `GET /health`, reads `CORS_ORIGIN` from the environment, and pins Node.js to `22.13.0`.
+
+For a local production-style verification, configure `backend/.env` from `.env.example`, then run:
+
+```bash
+cd backend
+npm install
+npm run db:migrate
+npm run db:seed
+npm start
+```
+
+In a separate terminal, build the frontend with the production API URL:
+
+```bash
+cd frontend
+npm install
+VITE_API_BASE_URL=https://your-backend-domain.example/api npm run build
+```
+
+The checked-in GitHub Actions workflow installs both workspaces and verifies the frontend build with Node.js `22.13.0`. Evidence for each checklist item is stored in `screenshots/` and linked from `DEPLOYMENT_CHECKLIST.md`.

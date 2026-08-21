@@ -1,0 +1,13 @@
+Public demo verification, 2026-08-21:
+
+Frontend URL: https://4173-innidkdyydm74th46exf6-08b8a9ee.sg1.manus.computer
+Backend URL: https://3001-innidkdyydm74th46exf6-08b8a9ee.sg1.manus.computer
+
+The public frontend loaded with title "LaunchPad | Mission Asset Control". It rendered the Inventory Operations dashboard and displayed four seeded products: X-100 Starship, Nova Pod, Fuel Cell Alpha, and Quantum Sensor.
+
+The backend health response was HTTP 200 with:
+{"status":"ok","database":"connected","timestamp":"2026-08-21T09:24:52.309Z"}
+
+The public products response was HTTP 200 and included Access-Control-Allow-Origin matching the exposed frontend origin.
+
+The public login response for admin@launchpad.com with the documented local verification password admin123 was HTTP 200 and included the matching CORS header.

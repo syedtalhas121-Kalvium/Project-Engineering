@@ -12,7 +12,7 @@
 |---|------|--------|----------|
 | 01 | Env variables configured on platform | ✅ PASS | `screenshots/01-env-vars-platform.png` — redacted runtime manifest shows DATABASE_URL, JWT_SECRET, CORS_ORIGIN, NODE_ENV, PORT, and VITE_API_BASE_URL. |
 | 02 | Build passes locally | ✅ PASS | `screenshots/02-local-build.log` — Vite production build completed successfully; `dist/index.html` 0.51 kB and JavaScript bundle 172.79 kB. |
-| 03 | Build passes in CI | ✅ PASS | `.github/workflows/ci.yml` — GitHub Actions workflow installs backend and frontend dependencies and builds with Node.js 22.13.0. The successful run URL is added in the final row update after the branch push. |
+| 03 | Build passes in CI | ✅ PASS | [`Deployment Checklist CI`](https://github.com/syedtalhas121-Kalvium/Project-Engineering/actions/runs/32468482743) — successful run for commit `2648821`; it installed both workspaces and built with Node.js 22.13.0. |
 | 04 | DB migrations executed | ✅ PASS | `screenshots/04-migration-log.log` — `prisma migrate deploy` reports one migration found and no pending migrations; the migration was applied during verification. |
 | 05 | CORS verified | ✅ PASS | `screenshots/05-cors-network-tab.txt` and `evidence/public_demo_findings.txt` — public API requests returned HTTP 200 with `Access-Control-Allow-Origin` matching the public frontend. |
 | 06 | API base URL correct in production | ✅ PASS | `screenshots/06-api-url.png` — production build uses the public backend URL, not localhost. |

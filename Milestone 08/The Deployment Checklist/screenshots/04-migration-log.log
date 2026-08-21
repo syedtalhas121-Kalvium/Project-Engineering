@@ -1,0 +1,12 @@
+
+> launchpad-backend@1.0.0 db:migrate
+> prisma migrate deploy --schema=../prisma/schema.prisma
+
+Environment variables loaded from .env
+Prisma schema loaded from ../prisma/schema.prisma
+Datasource "db": PostgreSQL database "launchpad", schema "public" at "localhost:5432"
+
+1 migration found in prisma/migrations
+
+
+No pending migrations to apply.

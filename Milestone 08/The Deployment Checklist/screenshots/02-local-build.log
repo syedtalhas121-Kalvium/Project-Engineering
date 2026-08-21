@@ -1,0 +1,13 @@
+
+> launchpad-frontend@1.0.0 build
+> vite build
+
+vite v5.4.21 building for production...
+transforming...
+✓ 36 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.51 kB │ gzip:  0.31 kB
+dist/assets/index-BgxnMOze.css    1.31 kB │ gzip:  0.63 kB
+dist/assets/index-CjHrf2Px.js   172.79 kB │ gzip: 56.00 kB
+✓ built in 970ms

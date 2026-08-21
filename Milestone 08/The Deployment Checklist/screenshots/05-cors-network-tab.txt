@@ -1,0 +1,14 @@
+Public API CORS verification — 2026-08-21
+
+Request origin:
+https://4173-innidkdyydm74th46exf6-08b8a9ee.sg1.manus.computer
+
+Request:
+GET https://3001-innidkdyydm74th46exf6-08b8a9ee.sg1.manus.computer/api/products
+
+Response:
+HTTP/2 200
+access-control-allow-origin: https://4173-innidkdyydm74th46exf6-08b8a9ee.sg1.manus.computer
+content-type: application/json; charset=utf-8
+
+The response included the four seeded products and the exact allowed origin of the public frontend. No CORS error was observed.

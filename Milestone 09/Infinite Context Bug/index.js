@@ -16,6 +16,10 @@ const anthropic = new Anthropic({
 
 const sessions = new Map()
 
+const SYSTEM_PROMPT = `You are a helpful customer support agent for CloudSync, a cloud file synchronisation SaaS.
+You help users with account issues, billing questions, sync problems, and feature questions.
+Be concise and professional. If you cannot resolve an issue, offer to escalate to the engineering team.`
+
 // Health check
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' })
@@ -48,11 +52,17 @@ app.post('/chat', async (req, res) => {
     const response = await anthropic.messages.create({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 512,
-      system: `You are a helpful customer support agent for CloudSync, a cloud file synchronisation SaaS.
-You help users with account issues, billing questions, sync problems, and feature questions.
-Be concise and professional. If you cannot resolve an issue, offer to escalate to the engineering team.`,
+      system: SYSTEM_PROMPT,
       messages: [...session.history]
     })
+
+    const usage = response.usage || {}
+    console.log(JSON.stringify({
+      turn: session.turnCount,
+      inputTokens: usage.input_tokens,
+      outputTokens: usage.output_tokens,
+      totalTokens: (usage.input_tokens || 0) + (usage.output_tokens || 0)
+    }))
 
     const reply = response.content[0].text
     session.history.push({ role: 'assistant', content: reply })

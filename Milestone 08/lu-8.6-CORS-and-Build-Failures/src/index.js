@@ -15,7 +15,7 @@ const healthRoutes = require("./routes/health");
 // (Lesson from 8.5 — always validate before booting)
 // ============================================================
 function validateEnv() {
-  const required = ["DATABASE_URL", "JWT_SECRET"];
+  const required = ["DATABASE_URL", "JWT_SECRET", "CORS_ORIGIN"];
   const missing = required.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {
@@ -46,7 +46,8 @@ const PORT = process.env.PORT || 3000;
 // ============================================================
 app.use(
   cors({
-    origin: "*",
+    origin: process.env.CORS_ORIGIN,
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })

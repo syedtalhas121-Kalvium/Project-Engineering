@@ -1,0 +1,5 @@
+[AI_USAGE] {"timestamp":"2026-08-21T14:49:12.269Z","userId":"mock-user-1","model":"openai/gpt-4o-mini","promptTokens":351,"completionTokens":191,"totalTokens":542,"endpoint":"summarize_note"}
+[AI_USAGE] {"timestamp":"2026-08-21T14:49:12.276Z","userId":"mock-user-1","model":"openai/gpt-4o-mini","promptTokens":623,"completionTokens":182,"totalTokens":805,"endpoint":"summarize_note"}
+[AI_USAGE] {"timestamp":"2026-08-21T14:49:12.279Z","userId":"mock-user-1","model":"openai/gpt-4o-mini","promptTokens":1045,"completionTokens":189,"totalTokens":1234,"endpoint":"summarize_note"}
+[AI_USAGE] {"timestamp":"2026-08-21T14:49:12.281Z","userId":"mock-user-1","model":"openai/gpt-4o-mini","promptTokens":351,"completionTokens":191,"totalTokens":542,"endpoint":"summarize_note"}
+[AI_USAGE] {"timestamp":"2026-08-21T14:49:12.283Z","userId":"mock-user-1","model":"openai/gpt-4o-mini","promptTokens":623,"completionTokens":182,"totalTokens":805,"endpoint":"summarize_note"}

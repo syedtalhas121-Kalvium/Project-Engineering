@@ -1,5 +1,7 @@
-// src/services/aiService.js
 import fetch from 'node-fetch'
+
+const AI_URL = 'https://openrouter.ai/api/v1/chat/completions'
+const AI_TIMEOUT_MS = 15_000
 
 const SUMMARIZE_SYSTEM_PROMPT = `You are an academic study assistant for KalviKonnect.
 Analyze the provided notes and return a structured JSON response:
@@ -21,70 +23,97 @@ Given interview rounds and questions, create a structured study plan as JSON:
 }
 Return ONLY valid JSON.`
 
-export async function summarizeNote(noteContent, userId) {
-  // ❌ No AbortController — hangs indefinitely on slow responses
-  // ❌ No try/catch — LLM failure crashes the server
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://kalvikonnect.app',
-      'X-Title': 'KalviKonnect'
-    },
-    body: JSON.stringify({
-      model: 'openai/gpt-4o-mini',
-      messages: [
-        { role: 'system', content: SUMMARIZE_SYSTEM_PROMPT },
-        { role: 'user', content: noteContent }  // ❌ Empty string goes straight to LLM
-      ],
-      max_tokens: 600,
-      temperature: 0.3
-    })
-  })
+async function callAI({ messages, maxTokens, temperature, endpoint, userId }) {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS)
 
-  const data = await response.json()
-  // ❌ Will throw if data.choices is missing — crashes server
-
-  const content = data.choices[0].message.content
   try {
-    return JSON.parse(content)
-  } catch {
-    return { overview: content, keyConcepts: [], examQuestions: [], difficulty: 'unknown' }
+    const response = await fetch(AI_URL, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://kalvikonnect.app',
+        'X-Title': 'KalviKonnect'
+      },
+      body: JSON.stringify({
+        model: 'openai/gpt-4o-mini',
+        messages,
+        max_tokens: maxTokens,
+        temperature
+      }),
+      signal: controller.signal
+    })
+
+    if (!response.ok) {
+      throw new Error(`OpenRouter returned HTTP ${response.status}`)
+    }
+
+    const data = await response.json()
+    const content = data?.choices?.[0]?.message?.content
+
+    if (typeof content !== 'string') {
+      throw new Error('OpenRouter response did not contain message content')
+    }
+
+    try {
+      return JSON.parse(content)
+    } catch {
+      return { overview: content, keyConcepts: [], examQuestions: [], difficulty: 'unknown' }
+    }
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      console.error('[AI_TIMEOUT]', JSON.stringify({
+        timestamp: new Date().toISOString(),
+        endpoint,
+        userId
+      }))
+    } else {
+      console.error('[AI_ERROR]', JSON.stringify({
+        timestamp: new Date().toISOString(),
+        endpoint,
+        userId,
+        error: error.message
+      }))
+    }
+
+    return {
+      success: false,
+      fallback: true,
+      message: 'AI analysis unavailable. Please try again shortly.'
+    }
+  } finally {
+    clearTimeout(timeoutId)
   }
 }
 
-export async function structurePlacement(rounds, questions, jobDescription) {
-  // ❌ No AbortController — hangs indefinitely
-  // ❌ No try/catch — LLM failure crashes the server
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://kalvikonnect.app',
-      'X-Title': 'KalviKonnect'
-    },
-    body: JSON.stringify({
-      model: 'openai/gpt-4o-mini',
-      messages: [
-        { role: 'system', content: STRUCTURE_SYSTEM_PROMPT },
-        {
-          role: 'user',
-          content: `Job: ${jobDescription || 'Software Engineer'}\nRounds: ${JSON.stringify(rounds)}\nQuestions: ${JSON.stringify(questions)}`
-          // ❌ undefined rounds/questions get serialized as garbage input
-        }
-      ],
-      max_tokens: 800,
-      temperature: 0.4
-    })
+export function summarizeNote(noteContent, userId) {
+  return callAI({
+    endpoint: 'summarize_note',
+    userId,
+    maxTokens: 600,
+    temperature: 0.3,
+    messages: [
+      { role: 'system', content: SUMMARIZE_SYSTEM_PROMPT },
+      { role: 'user', content: noteContent }
+    ]
   })
-
-  const data = await response.json()
-  const content = data.choices[0].message.content
-  try {
-    return JSON.parse(content)
-  } catch {
-    return { studyPlan: [], priorityTopics: [], timeline: 'N/A', tips: [] }
-  }
 }
+
+export function structurePlacement(rounds, questions, jobDescription, userId) {
+  return callAI({
+    endpoint: 'structure_placement',
+    userId,
+    maxTokens: 800,
+    temperature: 0.4,
+    messages: [
+      { role: 'system', content: STRUCTURE_SYSTEM_PROMPT },
+      {
+        role: 'user',
+        content: `Job: ${jobDescription || 'Software Engineer'}\nRounds: ${JSON.stringify(rounds)}\nQuestions: ${JSON.stringify(questions)}`
+      }
+    ]
+  })
+}
+
+export { AI_TIMEOUT_MS }

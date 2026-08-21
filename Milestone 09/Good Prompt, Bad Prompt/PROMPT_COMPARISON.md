@@ -2,6 +2,8 @@
 
 This comparison uses the same test input, model, and temperature for each bad-versus-good pair. The raw model responses are preserved verbatim as evidence; the improvement statements describe structural differences rather than subjective quality judgments.
 
+**Comparison settings:** `claude-haiku-4-5` at temperature `0.7` for all six calls.
+
 ---
 
 ## Task A — Notes Reviewer
@@ -85,11 +87,28 @@ Mitosis is when cells divide. There are 4 phases. Prophase is when chromosomes c
 
 ### Good Prompt Output
 
-_To be added from the raw LLM response._
+```text
+{
+  "clarity": {
+    "score": 7,
+    "feedback": "The note uses simple, direct language that is easy to follow. However, the descriptions are extremely brief and lack detail that would help with retention and deeper understanding during exam preparation."
+  },
+  "completeness": {
+    "score": 4,
+    "feedback": "The note covers the four phases but omits critical details such as what happens to the nuclear envelope, the role of spindle fibers, cytokinesis, and the distinction between mitosis and cytokinesis. It also lacks information about interphase (where DNA replication actually occurs) and the purpose of mitosis beyond vague mention of growth and repair."
+  },
+  "accuracy": {
+    "score": 8,
+    "feedback": "The core facts are correct: mitosis has four phases, DNA replicates before division, and the basic descriptions of each phase are accurate. The note correctly identifies that DNA replication happens before mitosis begins (during interphase), though this could be more explicitly stated."
+  },
+  "overallScore": 6,
+  "topPriority": "Expand descriptions of each phase to include key structural changes (nuclear envelope breakdown, spindle fiber formation, chromosome behavior) and clarify that DNA replication occurs during interphase, not during the four phases of mitosis itself."
+}
+```
 
 ### Improvement
 
-_To be added after both raw responses have been captured._
+The original prompt lacked the **Format** component, which caused an unstructured prose review with no reliably addressable `clarity.score` field; the rewritten prompt’s **Format** component produced one JSON object with exactly five top-level keys and nested score/feedback objects for all three categories.
 
 ---
 
@@ -167,11 +186,21 @@ This was ultimately a successful interview experience—the offer itself validat
 
 ### Good Prompt Output
 
-_To be added from the raw LLM response._
+~~~~text
+```json
+{
+  "company": "Google",
+  "role": "SWE Intern",
+  "difficulty": 3,
+  "keyTopics": ["Arrays", "Dynamic Programming"],
+  "outcome": "Received an offer but declined due to relocation constraints."
+}
+```
+~~~~
 
 ### Improvement
 
-_To be added after both raw responses have been captured._
+The original prompt lacked the **Format** component, which caused a Markdown summary with variable sections and no stable typed fields; the rewritten prompt’s **Format** component produced a JSON-shaped object containing `company`, `role`, an integer `difficulty`, a `keyTopics` array, and a one-sentence `outcome`.
 
 ---
 
@@ -227,7 +256,7 @@ TypeError: Cannot read properties of undefined (reading 'map')
 
 ### Bad Prompt Output
 
-```text
+````text
 # TypeError: Cannot read properties of undefined (reading 'map')
 
 This error means you're trying to call `.map()` on something that is `undefined`.
@@ -289,11 +318,22 @@ render() {
 
 **Can you share the code from UserList.jsx around line 34?** That will help pinpoint the exact issue.
 ```
+````
 
 ### Good Prompt Output
 
-_To be added from the raw LLM response._
+~~~~text
+```json
+{
+  "rootCause": "The 'users' prop or state variable is undefined when UserList.render() attempts to call .map() on it at line 34",
+  "affectedComponent": "/app/components/UserList.jsx",
+  "severity": "high",
+  "recommendedFix": "Add a null/undefined check before calling .map() on the users data. Ensure the parent component passes the users prop with an initial value (empty array or loaded data). Consider using optional chaining or a guard clause: users?.map(...) or if (!users) return null; before the map call.",
+  "codeSnippet": "// Before (line 34 in UserList.jsx):\nconst items = this.props.users.map(user => ...)\n\n// After:\nconst items = (this.props.users || []).map(user => ...)\n// Or:\nconst items = this.props.users?.map(user => ...) ?? []"
+}
+```
+~~~~
 
 ### Improvement
 
-_To be added after both raw responses have been captured._
+The original prompt lacked the **Format** component, which caused prose containing multiple possible causes and ad hoc code blocks without a severity field; the rewritten prompt’s **Format** component produced a diagnosis object with stable `rootCause`, `affectedComponent`, enum `severity`, `recommendedFix`, and optional `codeSnippet` fields.

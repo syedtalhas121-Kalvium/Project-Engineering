@@ -12,11 +12,19 @@ npm start
 # Server runs on http://localhost:3000
 ```
 
+### Local Mock Demo
+
+When an Anthropic key is unavailable, run the demo provider explicitly with `MOCK_ANTHROPIC=true npm start`. This mode is deterministic and intended for local verification only; production uses the Anthropic API by default and logs `response.usage.input_tokens` on every request.
+
 ## Running the 15-Message Test
 ```bash
 # In one terminal: npm start
 # In another terminal: node test-conversation.js
 ```
+
+## Context Policy
+
+The chat handler keeps a sliding window of the last **10 messages** with `session.history.slice(-CONTEXT_WINDOW_SIZE)`. The system prompt is passed separately to Anthropic, so it is never evicted. This bounds prompt growth for long-running conversations while intentionally allowing the earliest context to fall out after the window fills. See [`TOKEN_LOG.md`](./TOKEN_LOG.md) for the before/after evidence and cost arithmetic.
 
 ## Endpoints
 - `POST /chat` — body: `{ message: string, sessionId: string }` → `{ reply: string, turn: number }`
@@ -38,6 +46,10 @@ npm start
 - The application must remain fully functional after the fix.
 - Cost comparison must show visible arithmetic.
 - Deploy to a live URL before final submission.
+
+## Deployment
+
+The application listens on `process.env.PORT || 3000` and serves the chat UI and API from the same Node process. Configure `ANTHROPIC_API_KEY` in the deployment environment; do not commit `.env`. The included mock mode is not a substitute for production credentials or live usage measurement.
 
 ## Submission
 Submit your PR link and a 3–5 minute video demonstration of your process and results.

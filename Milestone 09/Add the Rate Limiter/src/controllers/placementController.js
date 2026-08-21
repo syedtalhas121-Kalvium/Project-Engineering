@@ -7,6 +7,9 @@ export async function structurePlacementController(req, res) {
   // ❌ No type check — non-array values cause bad prompt construction
   // ❌ No try/catch — errors crash the server
 
-  const structure = await structurePlacement(rounds, questions, jobDescription)
+  const structure = await structurePlacement(rounds, questions, jobDescription, req.user.id)
+  if (structure?.fallback) {
+    return res.status(503).json(structure)
+  }
   res.status(200).json({ success: true, structure, placementId: req.params.id })
 }

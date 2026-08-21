@@ -8,5 +8,8 @@ export async function summarizeNoteController(req, res) {
   // ❌ No try/catch — any error crashes the server
 
   const summary = await summarizeNote(noteContent, req.user.id)
+  if (summary?.fallback) {
+    return res.status(503).json(summary)
+  }
   res.status(200).json({ success: true, summary, noteId: req.params.id })
 }

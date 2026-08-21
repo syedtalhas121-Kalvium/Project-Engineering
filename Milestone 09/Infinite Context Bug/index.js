@@ -10,15 +10,33 @@ app.use(cors())
 app.use(express.json())
 app.use(express.static('public'))
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
-
-const sessions = new Map()
-
 const SYSTEM_PROMPT = `You are a helpful customer support agent for CloudSync, a cloud file synchronisation SaaS.
 You help users with account issues, billing questions, sync problems, and feature questions.
 Be concise and professional. If you cannot resolve an issue, offer to escalate to the engineering team.`
+const CONTEXT_WINDOW_SIZE = 10
+
+const mockAnthropic = {
+  messages: {
+    async create({ system, messages }) {
+      const serialized = JSON.stringify({ system, messages })
+      return {
+        content: [{
+          text: 'Mock response: I have reviewed the recent CloudSync context and can continue helping with your request.'
+        }],
+        usage: {
+          input_tokens: Math.ceil(serialized.length / 4),
+          output_tokens: 24
+        }
+      }
+    }
+  }
+}
+
+const anthropic = process.env.MOCK_ANTHROPIC === 'true'
+  ? mockAnthropic
+  : new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+
+const sessions = new Map()
 
 // Health check
 app.get('/health', (req, res) => {
@@ -32,7 +50,7 @@ app.delete('/chat/:sessionId', (req, res) => {
   res.json({ message: `Session ${sessionId} cleared.` })
 })
 
-// Chat handler with context growth bug
+// Chat handler with bounded sliding-window context
 app.post('/chat', async (req, res) => {
   const { message, sessionId } = req.body
 
@@ -53,7 +71,7 @@ app.post('/chat', async (req, res) => {
       model: 'claude-haiku-4-5-20251001',
       max_tokens: 512,
       system: SYSTEM_PROMPT,
-      messages: [...session.history]
+      messages: session.history.slice(-CONTEXT_WINDOW_SIZE)
     })
 
     const usage = response.usage || {}

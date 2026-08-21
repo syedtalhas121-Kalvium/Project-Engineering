@@ -1,0 +1,234 @@
+{
+  "measurementType": "LOCAL MOCK — not live Anthropic usage",
+  "model": "claude-haiku-4-5-20251001",
+  "inputPricePerMillion": 1,
+  "before": [
+    {
+      "turn": 1,
+      "inputTokens": 97,
+      "outputTokens": 24,
+      "totalTokens": 121,
+      "contextMessages": 1
+    },
+    {
+      "turn": 2,
+      "inputTokens": 154,
+      "outputTokens": 24,
+      "totalTokens": 178,
+      "contextMessages": 3
+    },
+    {
+      "turn": 3,
+      "inputTokens": 209,
+      "outputTokens": 24,
+      "totalTokens": 233,
+      "contextMessages": 5
+    },
+    {
+      "turn": 4,
+      "inputTokens": 262,
+      "outputTokens": 24,
+      "totalTokens": 286,
+      "contextMessages": 7
+    },
+    {
+      "turn": 5,
+      "inputTokens": 313,
+      "outputTokens": 24,
+      "totalTokens": 337,
+      "contextMessages": 9
+    },
+    {
+      "turn": 6,
+      "inputTokens": 368,
+      "outputTokens": 24,
+      "totalTokens": 392,
+      "contextMessages": 11
+    },
+    {
+      "turn": 7,
+      "inputTokens": 419,
+      "outputTokens": 24,
+      "totalTokens": 443,
+      "contextMessages": 13
+    },
+    {
+      "turn": 8,
+      "inputTokens": 474,
+      "outputTokens": 24,
+      "totalTokens": 498,
+      "contextMessages": 15
+    },
+    {
+      "turn": 9,
+      "inputTokens": 529,
+      "outputTokens": 24,
+      "totalTokens": 553,
+      "contextMessages": 17
+    },
+    {
+      "turn": 10,
+      "inputTokens": 579,
+      "outputTokens": 24,
+      "totalTokens": 603,
+      "contextMessages": 19
+    },
+    {
+      "turn": 11,
+      "inputTokens": 633,
+      "outputTokens": 24,
+      "totalTokens": 657,
+      "contextMessages": 21
+    },
+    {
+      "turn": 12,
+      "inputTokens": 688,
+      "outputTokens": 24,
+      "totalTokens": 712,
+      "contextMessages": 23
+    },
+    {
+      "turn": 13,
+      "inputTokens": 740,
+      "outputTokens": 24,
+      "totalTokens": 764,
+      "contextMessages": 25
+    },
+    {
+      "turn": 14,
+      "inputTokens": 797,
+      "outputTokens": 24,
+      "totalTokens": 821,
+      "contextMessages": 27
+    },
+    {
+      "turn": 15,
+      "inputTokens": 852,
+      "outputTokens": 24,
+      "totalTokens": 876,
+      "contextMessages": 29
+    }
+  ],
+  "after": [
+    {
+      "turn": 1,
+      "inputTokens": 97,
+      "outputTokens": 24,
+      "totalTokens": 121,
+      "contextMessages": 1
+    },
+    {
+      "turn": 2,
+      "inputTokens": 154,
+      "outputTokens": 24,
+      "totalTokens": 178,
+      "contextMessages": 3
+    },
+    {
+      "turn": 3,
+      "inputTokens": 209,
+      "outputTokens": 24,
+      "totalTokens": 233,
+      "contextMessages": 5
+    },
+    {
+      "turn": 4,
+      "inputTokens": 262,
+      "outputTokens": 24,
+      "totalTokens": 286,
+      "contextMessages": 7
+    },
+    {
+      "turn": 5,
+      "inputTokens": 313,
+      "outputTokens": 24,
+      "totalTokens": 337,
+      "contextMessages": 9
+    },
+    {
+      "turn": 6,
+      "inputTokens": 350,
+      "outputTokens": 24,
+      "totalTokens": 374,
+      "contextMessages": 10
+    },
+    {
+      "turn": 7,
+      "inputTokens": 344,
+      "outputTokens": 24,
+      "totalTokens": 368,
+      "contextMessages": 10
+    },
+    {
+      "turn": 8,
+      "inputTokens": 344,
+      "outputTokens": 24,
+      "totalTokens": 368,
+      "contextMessages": 10
+    },
+    {
+      "turn": 9,
+      "inputTokens": 346,
+      "outputTokens": 24,
+      "totalTokens": 370,
+      "contextMessages": 10
+    },
+    {
+      "turn": 10,
+      "inputTokens": 345,
+      "outputTokens": 24,
+      "totalTokens": 369,
+      "contextMessages": 10
+    },
+    {
+      "turn": 11,
+      "inputTokens": 344,
+      "outputTokens": 24,
+      "totalTokens": 368,
+      "contextMessages": 10
+    },
+    {
+      "turn": 12,
+      "inputTokens": 348,
+      "outputTokens": 24,
+      "totalTokens": 372,
+      "contextMessages": 10
+    },
+    {
+      "turn": 13,
+      "inputTokens": 345,
+      "outputTokens": 24,
+      "totalTokens": 369,
+      "contextMessages": 10
+    },
+    {
+      "turn": 14,
+      "inputTokens": 347,
+      "outputTokens": 24,
+      "totalTokens": 371,
+      "contextMessages": 10
+    },
+    {
+      "turn": 15,
+      "inputTokens": 352,
+      "outputTokens": 24,
+      "totalTokens": 376,
+      "contextMessages": 10
+    }
+  ],
+  "beforeCost": {
+    "calls": 450000,
+    "totalTokens": 213420000,
+    "monthlyCost": 213.42
+  },
+  "afterCost": {
+    "calls": 450000,
+    "totalTokens": 135000000,
+    "monthlyCost": 135
+  },
+  "monthlySaving": 78.41999999999999,
+  "coherence": {
+    "recentReferencePreservedAtTurn20": true,
+    "oldestReferenceDroppedAtTurn20": true
+  }
+}

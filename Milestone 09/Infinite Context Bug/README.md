@@ -51,5 +51,7 @@ The chat handler keeps a sliding window of the last **10 messages** with `sessio
 
 The application listens on `process.env.PORT || 3000` and serves the chat UI and API from the same Node process. Configure `ANTHROPIC_API_KEY` in the deployment environment; do not commit `.env`. The included mock mode is not a substitute for production credentials or live usage measurement.
 
+**Live demo:** [SupportBot mock-mode deployment](https://4173-ie4serbw6pnilgja75ece-da89755d.sg1.manus.computer) (temporary sandbox URL; uses the explicit local mock provider because no Anthropic key was available).
+
 ## Submission
 Submit your PR link and a 3–5 minute video demonstration of your process and results.

@@ -1,35 +1,32 @@
-# CredApp — Starter Repository
+# CredApp — Password Safety Challenge
 
-## Challenge: Passwords in Plain Sight
+CredApp is a basic authentication API for the **Passwords in Plain Sight** security challenge.
 
-This is the starter repository for the "Passwords in Plain Sight" security challenge.
+## What the app does
 
-## What This App Does
-CredApp is a basic authentication API. It allows users to:
-- Create an account via POST /api/auth/signup
-- Log in via POST /api/auth/login and receive a JWT token
-- Access a protected route via GET /api/auth/profile
+- Create an account with `POST /api/auth/signup` using `{ email, password }`.
+- Log in with `POST /api/auth/login` and receive a JWT.
+- Access `GET /api/auth/profile` with `Authorization: Bearer <token>`.
+
+## Password-safety result
+
+The starter version stored the submitted password directly in MongoDB and compared it as plaintext. The corrected version hashes passwords with bcrypt during signup and uses `bcrypt.compare` during login. The password field is also excluded from ordinary Mongoose queries and selected explicitly only for credential verification.
+
+See [CHANGES.md](./CHANGES.md) for the observed stored value, root cause, attack explanation, implementation details, and evidence screenshots.
 
 ## Setup
-1. Clone this repository
-2. Copy .env.example to .env and fill in your MongoDB URI and JWT secret
-3. Run: `npm install`
-4. Run: `npm start`
-5. The server starts at http://localhost:3000
 
-## Your Task
-1. Run the app and create a test user account
-2. Open your database viewer and look at the user record you just created
-3. Specifically: look at what is stored in the password field
-4. Trace through the code to understand WHY this is happening
-5. Fix it so passwords are never stored or compared in an unsafe way
+1. Copy `backend/.env.example` to `backend/.env` and set `MONGO_URI` and `JWT_SECRET`.
+2. Run `npm install`.
+3. Run `npm start`.
+4. The server starts at `http://localhost:3000`.
 
-## Endpoints
-- POST /api/auth/signup — { email, password }
-- POST /api/auth/login — { email, password } → returns JWT
-- GET /api/auth/profile — requires Authorization: Bearer <token>
+## Repeatable verification
 
-## Files to Investigate
-Start your investigation with these files:
-- `backend/controllers/authController.js`
-- `backend/models/User.js`
+Run the database-independent security checks with:
+
+```bash
+npm run test:password-security
+```
+
+The checks prove that bcrypt creates a salted hash, the hash is not equal to the plaintext, the correct password is accepted, the wrong password is rejected, and the source no longer stores or compares plaintext passwords.

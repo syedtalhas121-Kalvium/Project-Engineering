@@ -1,5 +1,8 @@
+import bcrypt from 'bcrypt'
 import User from '../models/User.js'
 import jwt from 'jsonwebtoken'
+
+const SALT_ROUNDS = Number(process.env.BCRYPT_SALT_ROUNDS || 12)
 
 // @desc    Register user
 // @route   POST /api/auth/signup
@@ -12,10 +15,11 @@ export const signup = async (req, res) => {
       return res.status(400).json({ message: 'User already exists' })
     }
 
-    // Password stored directly — no hashing
+    // Hash before persistence. The plaintext password never reaches MongoDB.
+    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS)
     const user = await User.create({
       email,
-      password, // plain text stored here
+      password: passwordHash,
     })
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
@@ -34,13 +38,14 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body
 
-    const user = await User.findOne({ email })
+    const user = await User.findOne({ email }).select('+password')
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' })
     }
 
-    // Direct string comparison — unsafe
-    if (user.password !== password) {
+    // Compare the submitted plaintext against the stored bcrypt hash.
+    const passwordMatches = await bcrypt.compare(password, user.password)
+    if (!passwordMatches) {
       return res.status(401).json({ message: 'Invalid credentials' })
     }
 

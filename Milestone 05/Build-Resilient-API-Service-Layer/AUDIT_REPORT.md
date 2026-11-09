@@ -52,6 +52,6 @@ The shared response interceptor handles the following statuses centrally:
 
 ## Deployment Evidence
 
-Live deployment URL: **[add the published URL here after deployment]**
+Live deployment URL: **https://syedtalhas121-kalvium.github.io/Project-Engineering/**
 
 Pull request commit history: https://github.com/syedtalhas121-Kalvium/Project-Engineering/pull/15/commits

@@ -24,6 +24,8 @@ apiClient.interceptors.response.use(
 
     if (status === 401) {
       error.message = 'Session expired. Please log in again.'
+    } else if (status === 403) {
+      error.message = 'You do not have permission to perform this action.'
     } else if (status >= 500) {
       error.message = 'Server error. Please try again later.'
     } else if (!error.response) {

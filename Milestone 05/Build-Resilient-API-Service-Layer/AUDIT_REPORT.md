@@ -40,3 +40,18 @@ Finally, page components are responsible for both UI state and transport mechani
 ## Refactor Acceptance Criteria
 
 The refactor is complete when all API requests are routed through `src/services/api.js`, no assigned page directly calls `fetch()`, no assigned page reads `localStorage`, no assigned page contains the FakeStore base URL, and the route structure and rendered UI remain unchanged. The service must use `VITE_API_BASE_URL`, attach an existing token through a request interceptor, and expose named functions for the endpoints used by the pages.
+
+## Resilience Verification
+
+The shared response interceptor handles the following statuses centrally:
+
+- `401`: session expired; the user is asked to log in again.
+- `403`: the request is understood but the user is not permitted to perform it.
+- `5xx`: server-side failure; the user is asked to retry later.
+- No response: network failure; the user is asked to check connectivity.
+
+## Deployment Evidence
+
+Live deployment URL: **[add the published URL here after deployment]**
+
+Pull request commit history: https://github.com/syedtalhas121-Kalvium/Project-Engineering/pull/15/commits
